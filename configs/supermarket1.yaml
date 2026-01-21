@@ -1,0 +1,87 @@
+width: 60
+height: 30
+
+walls:
+  # Top boundary
+  - type: rectangle
+    x: 0
+    y: 29
+    width: 60
+    height: 1
+  # Bottom boundary
+  - type: rectangle
+    x: 0
+    y: 0
+    width: 60
+    height: 1
+  # Right boundary
+  - type: rectangle
+    x: 59
+    y: 0
+    height: 30
+    width: 1
+  # Left boundary 1
+  - type: rectangle
+    x: 0
+    y: 0
+    width: 1
+    height: 30
+  # Shelf 1 
+  - type: rectangle
+    x: 3
+    y: 3
+    width: 25
+    height: 2
+  # Shelf 2 
+  - type: rectangle
+    x: 3
+    y: 10
+    width: 25
+    height: 2
+  # Shelf 3
+  - type: rectangle
+    x: 32
+    y: 10
+    width: 25
+    height: 2
+  # Shelf 4
+  - type: rectangle
+    x: 32
+    y: 3
+    width: 25
+    height: 2
+  # Shelf 5
+  - type: rectangle
+    x: 3
+    y: 17
+    width: 25
+    height: 2
+  # Shelf 6
+  - type: rectangle
+    x: 32
+    y: 17
+    width: 25
+    height: 2
+  # Shelf 5
+  - type: rectangle
+    x: 3
+    y: 24
+    width: 25
+    height: 2
+  # Shelf 6
+  - type: rectangle
+    x: 32
+    y: 24
+    width: 25
+    height: 2
+
+entrance:
+  - type: line
+    start: [0, 4]
+    end: [0, 9]
+
+exit:
+  - type: line
+    start: [0,16]
+    end: [0,20]
+
