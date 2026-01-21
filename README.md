@@ -1,5 +1,5 @@
 File structuring
-
+```
 Supermarket-Simulation
 |
 | - src/
@@ -17,3 +17,4 @@ Supermarket-Simulation
 |      |
 |      | - supermarket1.something
 |      | - etc...
+```
