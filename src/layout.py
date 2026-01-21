@@ -4,7 +4,7 @@ import yaml
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 
-def load_layout_csv(filename):
+def load_layout_csv(filename) -> np.ndarray:
     """
     Load a supermarket layout from a csv file, return an np array
 
@@ -27,7 +27,7 @@ def load_layout_csv(filename):
     return np.array(layout_list, dtype=str)
 
 
-def load_layout_yaml(filename):
+def load_layout_yaml(filename) -> np.ndarray:
     """
     Load a supermarket layout from a yaml file, return an np array
     """
@@ -42,9 +42,7 @@ def load_layout_yaml(filename):
 
     # Helper: fill rectangle
     def fill_rectangle(x, y, w, h, char):
-        # y-axis is vertical (row), x-axis is horizontal (column)
-        # Be careful: row index = height - 1 - y if origin is bottom-left
-        # Here assume origin at bottom-left
+        # Assume origin at bottom-left
         for i in range(y, y + h):
             for j in range(x, x + w):
                 if 0 <= i < height and 0 <= j < width:
@@ -82,7 +80,7 @@ def load_layout_yaml(filename):
     return grid
 
 
-def plot_layout(layout_array):
+def plot_layout(layout_array: np.ndarray) -> None:
     # Map characters to numeric codes
     char_to_num = {'0': 0, '#': 1, 'I': 2, 'E': 3, 'X': 4}
     numeric_grid = np.vectorize(char_to_num.get)(layout_array)
