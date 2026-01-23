@@ -3,6 +3,7 @@ import os
 import yaml
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+from dataclasses import dataclass
 
 def load_layout_csv(filename) -> np.ndarray:
     """
@@ -110,13 +111,6 @@ def load_layout_yaml(filename: str) -> np.ndarray:
 
     return grid
 
-
-
-from matplotlib.colors import ListedColormap
-import matplotlib.pyplot as plt
-import numpy as np
-
-
 def plot_layout(layout_array: np.ndarray) -> None:
     h, w = layout_array.shape
     numeric_grid = np.zeros((h, w), dtype=int)
@@ -164,9 +158,50 @@ def plot_layout(layout_array: np.ndarray) -> None:
     plt.tight_layout()
     plt.show()
 
+@dataclass
+class Product:
+    name: str
+    code: str
+    popularity: float
+    category: str
+
+
+def load_products(filename: str):
+    """
+    Load products & categories from the same YAML file as the layout.
+    Returns:
+      - products_by_code: dict[str, Product]
+      - products_by_category: dict[str, list[Product]]
+    """
+    with open(filename, "r") as f:
+        data = yaml.safe_load(f)
+
+    products_by_code: dict[str, Product] = {}
+    products_by_category: dict[str, list[Product]] = {}
+
+    for category, products in data.get("products", {}).items():
+        products_by_category[category] = []
+
+        for p in products:
+            product = Product(
+                name=p["name"],
+                code=p["code"],
+                popularity=float(p["popularity"]),
+                category=category,
+            )
+
+            products_by_code[product.code] = product
+            products_by_category[category].append(product)
+
+    return products_by_code, products_by_category
+
 
 # Example usage
 filename = os.path.join("configs", "supermarket1.yaml")
 layout_array = load_layout_yaml(filename)
+products_by_code, products_by_category= load_products(filename)
+print(products_by_category)
+print(products_by_code)
+# np.set_printoptions(threshold=np.inf)
 print(layout_array)
 plot_layout(layout_array)
