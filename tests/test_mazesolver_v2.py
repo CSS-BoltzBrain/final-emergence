@@ -92,6 +92,7 @@ def plot_full_map_with_sequence(layout_array, path=None, pickup_targets=None, ti
 
 def run_simulation():
     filename = os.path.join("configs", "supermarket1.yaml")
+    size_shopping_list = 10
     
     if not os.path.exists(filename):
         print(f"Error: '{filename}' not found.")
@@ -109,10 +110,10 @@ def run_simulation():
     # --- GENERATE RANDOM SHOPPING LIST ---
     all_product_names = list(agent.name_to_code.keys())
     
-    if len(all_product_names) < 5:
+    if len(all_product_names) < size_shopping_list:
         shopping_list = all_product_names
     else:
-        shopping_list = random.sample(all_product_names, 5)
+        shopping_list = random.sample(all_product_names, size_shopping_list)
 
     print(f"Shopping List: {shopping_list}")
 
@@ -139,7 +140,7 @@ def run_simulation():
             print(f"Success! Path calculated: {len(path)} steps.")
             # Pass the targets to the plotter to determine order
             plot_full_map_with_sequence(layout_grid, path, pickup_targets, 
-                                        title=f"Optimal Route for {len(shopping_list)} Items")
+                                        title=f"Optimal Route for {size_shopping_list} Items")
         else:
             print("Solver failed to find a path.")
             
