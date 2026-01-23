@@ -27,82 +27,146 @@ def load_layout_csv(filename) -> np.ndarray:
     return np.array(layout_list, dtype=str)
 
 
-def load_layout_yaml(filename) -> np.ndarray:
+import yaml
+import numpy as np
+from typing import Dict, List
+
+
+def load_layout_yaml(filename: str) -> np.ndarray:
     """
-    Load a supermarket layout from a yaml file, return an np array
+    Load a supermarket layout from a yaml file, return an np array of strings.
     """
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         data = yaml.safe_load(f)
 
-    width = data['width']
-    height = data['height']
+    width: int = data["width"]
+    height: int = data["height"]
 
-    # Initialize empty grid
-    grid = np.full((height, width), '0', dtype=str)
+    grid = np.full((height, width), "0", dtype="<U4")
 
-    # Helper: fill rectangle
-    def fill_rectangle(x, y, w, h, char):
-        # Assume origin at bottom-left
+
+    def fill_rectangle(x: int, y: int, w: int, h: int, value: str):
         for i in range(y, y + h):
             for j in range(x, x + w):
                 if 0 <= i < height and 0 <= j < width:
-                    grid[i, j] = char
+                    grid[i, j] = value
 
-    # Fill walls/shelves
-    for wall in data.get('walls', []):
-        x, y = wall['x'], wall['y']
-        w, h = wall['width'], wall['height']
-        fill_rectangle(x, y, w, h, '#')
+    # --- Walls ---
+    for wall in data.get("walls", []):
+        fill_rectangle(
+            wall["x"], wall["y"],
+            wall["width"], wall["height"],
+            "#"
+        )
 
-    # Fill entrances
-    for entrance in data.get('entrance', []):
-        x0, y0 = entrance['start']
-        x1, y1 = entrance['end']
-        # fill as a line
-        if x0 == x1:  # vertical line
+
+    # --- Entrances ---
+    for entrance in data.get("entrance", []):
+        x0, y0 = entrance["start"]
+        x1, y1 = entrance["end"]
+        if x0 == x1:
             for i in range(min(y0, y1), max(y0, y1) + 1):
-                grid[i, x0] = 'I'
-        elif y0 == y1:  # horizontal line
+                grid[i, x0] = "I"
+        elif y0 == y1:
             for j in range(min(x0, x1), max(x0, x1) + 1):
-                grid[y0, j] = 'I'
+                grid[y0, j] = "I"
 
-    # Fill exits
-    for exit_ in data.get('exit', []):
-        x0, y0 = exit_['start']
-        x1, y1 = exit_['end']
-        if x0 == x1:  # vertical line
+    # --- Exits ---
+    for exit_ in data.get("exit", []):
+        x0, y0 = exit_["start"]
+        x1, y1 = exit_["end"]
+        if x0 == x1:
             for i in range(min(y0, y1), max(y0, y1) + 1):
-                grid[i, x0] = 'E'
-        elif y0 == y1:  # horizontal line
+                grid[i, x0] = "E"
+        elif y0 == y1:
             for j in range(min(x0, x1), max(x0, x1) + 1):
-                grid[y0, j] = 'E'
+                grid[y0, j] = "E"
+
+    # --- Products ---
+    products: Dict[str, List[dict]] = data.get("products", {})
+
+    # --- Shelves with categories ---
+    for shelf in data.get("shelves", []):
+        category = shelf["category"]
+        product_list = products.get(category, [])
+
+        codes = [p["code"] for p in product_list]
+        n_products = len(codes)
+        cells = shelf["width"] * shelf["height"]
+
+        block_size = max(1, cells // n_products)
+
+        cell_idx = 0
+        product_idx = 0
+
+        for i in range(shelf["y"], shelf["y"] + shelf["height"]):
+            for j in range(shelf["x"], shelf["x"] + shelf["width"]):
+                grid[i, j] = codes[product_idx]
+                cell_idx += 1
+
+                if cell_idx >= block_size:
+                    cell_idx = 0
+                    product_idx = min(product_idx + 1, n_products - 1)
 
     return grid
 
 
+
+from matplotlib.colors import ListedColormap
+import matplotlib.pyplot as plt
+import numpy as np
+
+
 def plot_layout(layout_array: np.ndarray) -> None:
-    # Map characters to numeric codes
-    char_to_num = {'0': 0, '#': 1, 'I': 2, 'E': 3, 'X': 4}
-    numeric_grid = np.vectorize(char_to_num.get)(layout_array)
+    h, w = layout_array.shape
+    numeric_grid = np.zeros((h, w), dtype=int)
 
-    # Create a colormap (order must match numeric codes)
-    cmap = ListedColormap(['white', 'saddlebrown', 'green', 'red'])
+    for i in range(h):
+        for j in range(w):
+            cell = layout_array[i, j]
+            if cell == '0':
+                numeric_grid[i, j] = 0
+            elif cell == '#':
+                numeric_grid[i, j] = 1
+            elif cell == 'I':
+                numeric_grid[i, j] = 2
+            elif cell == 'E':
+                numeric_grid[i, j] = 3
+            elif cell.startswith('P'):
+                numeric_grid[i, j] = 4
 
-    # Plot
-    height, width = layout_array.shape
-    fig, ax = plt.subplots(figsize=(width/5, height/5))
-    im = ax.imshow(numeric_grid, origin='lower', cmap=cmap)
+    cmap = ListedColormap([
+        'white',        # 0 empty
+        'saddlebrown',  # 1 wall
+        'green',        # 2 entrance
+        'red',          # 3 exit
+        'gold'          # 4 shelf
+    ])
 
-    # Optional: grid lines
-    ax.set_xticks(np.arange(-0.5, width, 1), minor=True)
-    ax.set_yticks(np.arange(-0.5, height, 1), minor=True)
-    ax.grid(which='minor', color='gray', linestyle='-', linewidth=0.5)
-    ax.tick_params(which='both', bottom=False, left=False, labelbottom=False, labelleft=False)
+    fig, ax = plt.subplots(figsize=(w / 4, h / 4))
+    ax.imshow(numeric_grid, origin='lower', cmap=cmap)
 
+    ax.set_xticks(np.arange(-0.5, w, 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, h, 1), minor=True)
+    ax.grid(which='minor', color='gray', linewidth=0.3)
+    ax.tick_params(which='both', bottom=False, left=False,
+                   labelbottom=False, labelleft=False)
+    for i in range(h):
+        for j in range(w):
+            cell = layout_array[i, j]
+            if cell.startswith("P"):
+                ax.text(
+                    j, i, cell,
+                    ha='center', va='center',
+                    fontsize=6,
+                    color='black'
+                )
+    plt.tight_layout()
     plt.show()
 
-# # Example usage
-# filename = os.path.join("configs", "supermarket1.yaml")
-# layout_array = load_layout_yaml(filename)
-# print(layout_array)
-# plot_layout(layout_array)
+
+# Example usage
+filename = os.path.join("configs", "supermarket1.yaml")
+layout_array = load_layout_yaml(filename)
+print(layout_array)
+plot_layout(layout_array)
