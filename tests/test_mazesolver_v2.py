@@ -6,8 +6,8 @@ from matplotlib.colors import ListedColormap
 import traceback
 
 # Import your existing modules
-from layout import load_layout_yaml, load_products
-from maze_solver_v2 import AgentPathfinder
+from src.layout import load_layout_yaml, load_products
+from src.maze_solver_v2 import AgentPathfinder
 
 def plot_full_map_with_sequence(layout_array, path=None, pickup_targets=None, title="Supermarket Simulation"):
     h, w = layout_array.shape
@@ -99,7 +99,7 @@ def run_simulation():
 
     print(f"Loading Layout: {filename}...")
     layout_grid = load_layout_yaml(filename)
-    products_by_code, _ = load_products(filename)
+    products_list, products_by_code, products_by_category= load_products(filename)
 
     agent = AgentPathfinder(layout_grid, products_by_code)
 

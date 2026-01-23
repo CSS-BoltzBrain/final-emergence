@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 
-def load_layout_yaml(filename: str) -> np.ndarray:
+def load_layout_yaml(filename: str) -> np.ndarray[str]:
     """
     Load a supermarket layout from a yaml file, return an np array of strings.
     """
@@ -144,8 +144,9 @@ def load_products(filename: str):
     """
     Load products & categories from the same YAML file as the layout.
     Returns:
-      - products_by_code: dict[str, Product]
-      - products_by_category: dict[str, list[Product]]
+        - products_list: [Product]
+        - products_by_code: dict[str, Product]
+        - products_by_category: dict[str, list[Product]]
     """
     with open(filename, "r") as f:
         data = yaml.safe_load(f)
@@ -172,13 +173,13 @@ def load_products(filename: str):
     return products_list, products_by_code, products_by_category
 
 
-# Example usage
-filename = os.path.join("configs", "supermarket1.yaml")
-layout_array = load_layout_yaml(filename)
-products_list, products_by_code, products_by_category= load_products(filename)
-# print(products_by_category)
-# print(products_by_code)
-# print(products_list)
-# np.set_printoptions(threshold=np.inf)
-print(layout_array)
-plot_layout(layout_array)
+# # Example usage
+# filename = os.path.join("configs", "supermarket1.yaml")
+# layout_array = load_layout_yaml(filename)
+# products_list, products_by_code, products_by_category= load_products(filename)
+# # print(products_by_category)
+# # print(products_by_code)
+# # print(products_list)
+# # np.set_printoptions(threshold=np.inf)
+# print(layout_array)
+# plot_layout(layout_array)
