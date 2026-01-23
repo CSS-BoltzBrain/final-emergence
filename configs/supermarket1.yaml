@@ -39,7 +39,7 @@ shelves:
   # Shelf 1-2
   - type: rectangle
     x: 3
-    y: 2
+    y: 4
     width: 25
     height: 1
     category: candy
@@ -77,7 +77,7 @@ shelves:
   # Shelf 4-1
   - type: rectangle
     x: 32
-    y: 2
+    y: 4
     width: 25
     height: 1
     category: produce
@@ -156,10 +156,10 @@ entrance:
 
 exit:
   - type: line
-    start: [0,16]
-    end: [0,20]
+    start: [0,20]
+    end: [0,24]
 
-products:
+categories:
   breakfast:
     - name: bread
       code: P1

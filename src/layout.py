@@ -4,32 +4,6 @@ import yaml
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from dataclasses import dataclass
-
-def load_layout_csv(filename) -> np.ndarray:
-    """
-    Load a supermarket layout from a csv file, return an np array
-
-    Legend in file:
-    0: empty, walkable
-    #: shelf
-    I: in/entrance
-    E: exit
-    X: unreachable
-
-    """
-    
-    layout_list = []
-    with open(filename, 'r') as f:
-        for line in f:
-            # Split by comma, strip whitespace
-            row = [item.strip() for item in line.strip().split(',')]
-            layout_list.append(row)
-
-    return np.array(layout_list, dtype=str)
-
-
-import yaml
-import numpy as np
 from typing import Dict, List
 
 
@@ -84,12 +58,12 @@ def load_layout_yaml(filename: str) -> np.ndarray:
                 grid[y0, j] = "E"
 
     # --- Products ---
-    products: Dict[str, List[dict]] = data.get("products", {})
+    categories: Dict[str, List[dict]] = data.get("categories", {})
 
     # --- Shelves with categories ---
     for shelf in data.get("shelves", []):
         category = shelf["category"]
-        product_list = products.get(category, [])
+        product_list = categories.get(category, [])
 
         codes = [p["code"] for p in product_list]
         n_products = len(codes)
@@ -178,8 +152,9 @@ def load_products(filename: str):
 
     products_by_code: dict[str, Product] = {}
     products_by_category: dict[str, list[Product]] = {}
+    products_list = []
 
-    for category, products in data.get("products", {}).items():
+    for category, products in data.get("categories", {}).items():
         products_by_category[category] = []
 
         for p in products:
@@ -190,18 +165,20 @@ def load_products(filename: str):
                 category=category,
             )
 
+            products_list.append(product)
             products_by_code[product.code] = product
             products_by_category[category].append(product)
 
-    return products_by_code, products_by_category
+    return products_list, products_by_code, products_by_category
 
 
 # Example usage
 filename = os.path.join("configs", "supermarket1.yaml")
 layout_array = load_layout_yaml(filename)
-products_by_code, products_by_category= load_products(filename)
-print(products_by_category)
-print(products_by_code)
+products_list, products_by_code, products_by_category= load_products(filename)
+# print(products_by_category)
+# print(products_by_code)
+# print(products_list)
 # np.set_printoptions(threshold=np.inf)
 print(layout_array)
 plot_layout(layout_array)
