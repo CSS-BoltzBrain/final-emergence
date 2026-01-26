@@ -7,6 +7,9 @@ from matplotlib.animation import ArtistAnimation
 from maze_solver_v2 import AgentPathfinder
 from multiprocessing import Pool
 
+import sys
+import os
+
 from tqdm import tqdm
 
 
@@ -28,9 +31,7 @@ class Simulation:
 
     def _spawn_agents(self, num_agents: int) -> list[Agent | None]:
         """Spawn a given number of agents in the simulation."""
-        agent_list = [
-            self._state_map.spawn_agent_start() for _ in range(num_agents)
-        ]
+        agent_list = [self._state_map.spawn_agent_start() for _ in range(num_agents)]
 
         return agent_list
 
@@ -47,9 +48,7 @@ class Simulation:
                 im = ax.imshow(self.checkpoints[i], cmap=cmap)
             ims.append([im])
 
-        ani = ArtistAnimation(
-            fig, ims, interval=50, blit=True, repeat_delay=1000
-        )
+        ani = ArtistAnimation(fig, ims, interval=50, blit=True, repeat_delay=1000)
 
         plt.tight_layout()
         plt.show()
@@ -68,25 +67,29 @@ class Simulation:
         self._agent_list = [agent for agent in self._agent_list if not None]
 
         agents_needing_paths = [
-            agent
-            for agent in self._agent_list
-            if agent and agent._route is None
+            agent for agent in self._agent_list if agent and agent._route is None
         ]
 
         tasks = [agent.request_route() for agent in agents_needing_paths]
 
         if tasks:
             routes = self._path_pool.map(
-                compute_route, tasks, len(tasks) // 16
+                compute_route, tasks, len(tasks) // os.cpu_count()
             )
 
             for agent, route in zip(agents_needing_paths, routes):
                 agent._route = route
 
     def checkpoint(self):
-        self.checkpoints += [
-            np.array(self._state_map.get_agent_map(), dtype=np.int8)
-        ]
+        self.checkpoints += [np.array(self._state_map.get_agent_map(), dtype=np.int8)]
+
+    def save_checkpoints(self, filename):
+        arr = np.array(self.checkpoints, dtype=np.int8)
+        np.save(filename, arr)
+
+    def load_checkpoints(self, filename):
+        arr = np.load(filename)
+        self.checkpoints = arr
 
 
 def compute_route(args):
@@ -95,6 +98,7 @@ def compute_route(args):
 
 
 if __name__ == "__main__":
+    scratch_disk = sys.argv[1]
     simulation = Simulation("configs/empty.yaml", 50)
     shop_map = simulation._state_map.get_shop()
     pathfinder = AgentPathfinder(shop_map)
@@ -103,10 +107,12 @@ if __name__ == "__main__":
     print(shop_map.products_list)
     print(agent_map)
 
-    tk0 = tqdm(range(1000), total=1000)
+    tk0 = tqdm(range(1000), total=1000, disable=None)
     for i in tk0:
         simulation.update()
         if not i % 10:
             simulation.checkpoint()
+
+    simulation.save_checkpoints(f"{scratch_disk}/simulation1000")
 
     simulation.plot()
