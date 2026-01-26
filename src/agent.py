@@ -70,6 +70,7 @@ class Agent:
                 next_position
             ):  # Return True if successful:
                 # Recalculate route if movement was blocked
+                self._state_map.write_agent_map(self.position)
                 self._route = self._route_generator()
                 return False  # Skip movement this turn
             self.move(next_position)
