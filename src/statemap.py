@@ -9,7 +9,10 @@ class StateMap:
         self._shop_map = ShopMap(filename)
         self._shop_size = self._shop_map.layout_array.shape
         self._active_agent_map = np.zeros(
-            (self._shop_size[0] * scale_factor, self._shop_size[1] * scale_factor),
+            (
+                self._shop_size[0] * scale_factor,
+                self._shop_size[1] * scale_factor,
+            ),
             dtype=int,
         )
         self._passive_agent_map = np.zeros_like(self._active_agent_map)

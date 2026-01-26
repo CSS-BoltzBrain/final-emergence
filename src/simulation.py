@@ -28,7 +28,9 @@ class Simulation:
 
     def _spawn_agents(self, num_agents: int) -> list[Agent | None]:
         """Spawn a given number of agents in the simulation."""
-        agent_list = [self._state_map.spawn_agent_start() for _ in range(num_agents)]
+        agent_list = [
+            self._state_map.spawn_agent_start() for _ in range(num_agents)
+        ]
 
         return agent_list
 
@@ -45,7 +47,9 @@ class Simulation:
                 im = ax.imshow(self.checkpoints[i], cmap=cmap)
             ims.append([im])
 
-        ani = ArtistAnimation(fig, ims, interval=50, blit=True, repeat_delay=1000)
+        ani = ArtistAnimation(
+            fig, ims, interval=50, blit=True, repeat_delay=1000
+        )
 
         plt.tight_layout()
         plt.show()
@@ -64,19 +68,25 @@ class Simulation:
         self._agent_list = [agent for agent in self._agent_list if not None]
 
         agents_needing_paths = [
-            agent for agent in self._agent_list if agent and agent._route is None
+            agent
+            for agent in self._agent_list
+            if agent and agent._route is None
         ]
 
         tasks = [agent.request_route() for agent in agents_needing_paths]
 
         if tasks:
-            routes = self._path_pool.map(compute_route, tasks, len(tasks) // 16)
+            routes = self._path_pool.map(
+                compute_route, tasks, len(tasks) // 16
+            )
 
             for agent, route in zip(agents_needing_paths, routes):
                 agent._route = route
 
     def checkpoint(self):
-        self.checkpoints += [np.array(self._state_map.get_agent_map(), dtype=np.int8)]
+        self.checkpoints += [
+            np.array(self._state_map.get_agent_map(), dtype=np.int8)
+        ]
 
 
 def compute_route(args):

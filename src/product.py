@@ -1,6 +1,10 @@
 class Product:
     def __init__(
-        self, name: str, category: str, waiting_time: int = 0, discount: bool = False
+        self,
+        name: str,
+        category: str,
+        waiting_time: int = 0,
+        discount: bool = False,
     ):
         self._name = name
         self._category = category

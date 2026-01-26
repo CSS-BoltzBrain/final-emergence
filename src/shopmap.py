@@ -14,9 +14,11 @@ class ShopMap:
 
     def __init__(self, filename: str) -> None:
         self.layout_array = self.load_layout_yaml(filename)
-        self.products_list, self._products_by_code, self.products_by_category = (
-            self._load_products(filename)
-        )
+        (
+            self.products_list,
+            self._products_by_code,
+            self.products_by_category,
+        ) = self._load_products(filename)
 
     @property
     def product_dict(self) -> dict[str, Product]:
@@ -42,7 +44,9 @@ class ShopMap:
 
         # --- Walls ---
         for wall in data.get("walls", []):
-            fill_rectangle(wall["x"], wall["y"], wall["width"], wall["height"], "#")
+            fill_rectangle(
+                wall["x"], wall["y"], wall["width"], wall["height"], "#"
+            )
 
         # --- Entrances ---
         for entrance in data.get("entrance", []):
@@ -133,14 +137,24 @@ class ShopMap:
         ax.set_yticks(np.arange(-0.5, h, 1), minor=True)
         ax.grid(which="minor", color="gray", linewidth=0.3)
         ax.tick_params(
-            which="both", bottom=False, left=False, labelbottom=False, labelleft=False
+            which="both",
+            bottom=False,
+            left=False,
+            labelbottom=False,
+            labelleft=False,
         )
         for y in range(h):
             for x in range(w):
                 cell = self.layout_array[y, x]
                 if cell.startswith("P"):
                     ax.text(
-                        x, y, cell, ha="center", va="center", fontsize=6, color="black"
+                        x,
+                        y,
+                        cell,
+                        ha="center",
+                        va="center",
+                        fontsize=6,
+                        color="black",
                     )
 
     def _load_products(
@@ -173,7 +187,9 @@ class ShopMap:
                 products_by_category[category].append(product)
                 products_by_code[p["code"]] = product
 
-        products_by_code["E"] = Product(name="Exit", category="Exit", waiting_time=0)
+        products_by_code["E"] = Product(
+            name="Exit", category="Exit", waiting_time=0
+        )
 
         return products_list, products_by_code, products_by_category
 

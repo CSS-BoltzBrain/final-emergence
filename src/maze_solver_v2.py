@@ -59,14 +59,19 @@ class AgentPathfinder:
         self.grid = shop_map.layout_array
         self.height, self.width = self.grid.shape
         self.products_by_code = shop_map.product_dict
-        self.name_to_code = {p.name: code for code, p in self.products_by_code.items()}
+        self.name_to_code = {
+            p.name: code for code, p in self.products_by_code.items()
+        }
 
         # Cache for distances to avoid re-running BFS for known pairs
         # Key: ((r1, c1), (r2, c2)), Value: int distance
         self.memo_dist = {}
 
     def solve_path(
-        self, start_pos: Coord, shopping_list_names: ShoppingList, exit_pos: Coord
+        self,
+        start_pos: Coord,
+        shopping_list_names: ShoppingList,
+        exit_pos: Coord,
     ) -> Path:
         """
         Main entry point to calculate the full shopping route.
@@ -101,7 +106,9 @@ class AgentPathfinder:
         # 2. Optimize Route based on list size
         if len(items_data) <= 9:
             # print(f"Optimization: Using EXACT solver for {len(items_data)} items.")
-            sorted_items = self._optimize_route_exact(start_node, items_data, exit_node)
+            sorted_items = self._optimize_route_exact(
+                start_node, items_data, exit_node
+            )
         else:
             # print(f"Optimization: Using HEURISTIC solver for {len(items_data)} items.")
             sorted_items = self._optimize_route_heuristic(
@@ -146,7 +153,9 @@ class AgentPathfinder:
 
         for perm in itertools.permutations(item_indices):
             # Distance: Start -> First Item
-            current_dist = self._get_memoized_dist(start, items[perm[0]]["pos"])
+            current_dist = self._get_memoized_dist(
+                start, items[perm[0]]["pos"]
+            )
 
             # Distance: Item -> Item
             valid = True
@@ -219,7 +228,9 @@ class AgentPathfinder:
                     # Create a new path with segment reversed
                     new_path = path[:i] + path[i : j + 1][::-1] + path[j + 1 :]
 
-                    new_total = self._calculate_path_cost(start, new_path, exit_pos)
+                    new_total = self._calculate_path_cost(
+                        start, new_path, exit_pos
+                    )
 
                     if new_total < current_total:
                         path = new_path
@@ -332,7 +343,9 @@ class AgentPathfinder:
                             tent_g + abs(nr - goal[0]) + abs(nc - goal[1])
                         ) + np.random.uniform(0, 0.001)
                         if (nr, nc) not in open_set_hash:
-                            heapq.heappush(open_set, (f_score[(nr, nc)], (nr, nc)))
+                            heapq.heappush(
+                                open_set, (f_score[(nr, nc)], (nr, nc))
+                            )
                             open_set_hash.add((nr, nc))
         return []
 

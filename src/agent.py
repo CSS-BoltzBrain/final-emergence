@@ -79,6 +79,8 @@ class Agent:
             #     product = self._shopping_list.pop(0)
             #     self._pause_length = product.waiting_time
         else:
-            self._route = self._route_generator()  # Recalculate route if needed
+            self._route = (
+                self._route_generator()
+            )  # Recalculate route if needed
 
         return self.position == self._end_position
