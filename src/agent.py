@@ -80,4 +80,6 @@ class Agent:
             #     product = self._shopping_list.pop(0)
             #     self._pause_length = product.waiting_time
 
+        self._state_map.write_agent_map(self.position)
+
         return self.position == self._end_position

@@ -67,7 +67,7 @@ class Simulation:
         self._agent_list = [agent for agent in self._agent_list if not None]
 
         agents_needing_paths = [
-            agent for agent in self._agent_list if agent and agent._route is None
+            agent for agent in self._agent_list if agent and not agent._route
         ]
 
         tasks = [agent.request_route() for agent in agents_needing_paths]
@@ -81,7 +81,7 @@ class Simulation:
                 agent._route = route
 
     def checkpoint(self):
-        self.checkpoints += [np.array(self._state_map.get_agent_map(), dtype=np.int8)]
+        self.checkpoints += [np.array(self._state_map.get_agent_map(), dtype=np.bool_)]
 
     def save_checkpoints(self, filename):
         arr = np.array(self.checkpoints, dtype=np.int8)
@@ -99,7 +99,7 @@ def compute_route(args):
 
 if __name__ == "__main__":
     scratch_disk = sys.argv[1]
-    simulation = Simulation("configs/empty.yaml", 50)
+    simulation = Simulation("configs/empty.yaml", 192)
     shop_map = simulation._state_map.get_shop()
     pathfinder = AgentPathfinder(shop_map)
     agent_map = simulation._state_map.get_agent_map()
@@ -107,10 +107,10 @@ if __name__ == "__main__":
     print(shop_map.products_list)
     print(agent_map)
 
-    tk0 = tqdm(range(1000), total=1000, disable=None)
+    tk0 = tqdm(range(300), total=300, disable=None)
     for i in tk0:
         simulation.update()
-        if not i % 10:
+        if not i % 1:
             simulation.checkpoint()
 
     simulation.save_checkpoints(f"{scratch_disk}/simulation1000")
