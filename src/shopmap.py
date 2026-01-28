@@ -19,6 +19,7 @@ class ShopMap:
             self._products_by_code,
             self.products_by_category,
         ) = self._load_products(filename)
+        self.height, self.width = self.layout_array.shape
 
     @property
     def product_dict(self) -> dict[str, Product]:
@@ -44,9 +45,7 @@ class ShopMap:
 
         # --- Walls ---
         for wall in data.get("walls", []):
-            fill_rectangle(
-                wall["x"], wall["y"], wall["width"], wall["height"], "#"
-            )
+            fill_rectangle(wall["x"], wall["y"], wall["width"], wall["height"], "#")
 
         # --- Entrances ---
         for entrance in data.get("entrance", []):
@@ -187,9 +186,7 @@ class ShopMap:
                 products_by_category[category].append(product)
                 products_by_code[p["code"]] = product
 
-        products_by_code["E"] = Product(
-            name="Exit", category="Exit", waiting_time=0
-        )
+        products_by_code["E"] = Product(name="Exit", category="Exit", waiting_time=0)
 
         return products_list, products_by_code, products_by_category
 
@@ -204,3 +201,9 @@ class ShopMap:
         shopping_list.append(self._products_by_code["E"])
 
         return shopping_list
+
+    def walkable(self, x, y):
+        if not (0 <= y < self.height and 0 <= x < self.width):
+            return False
+        val = self.layout_array[y, x]
+        return val == "0" or val == "I" or val == "E"

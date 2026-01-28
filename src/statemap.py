@@ -5,17 +5,22 @@ from product import Product
 
 
 class StateMap:
-    def __init__(self, filename: str, scale_factor: int) -> None:
+    def __init__(
+        self, filename: str, scale_factor: int, adjust_probability: float
+    ) -> None:
         self._shop_map = ShopMap(filename)
+        self._scale_factor = scale_factor
         self._shop_size = self._shop_map.layout_array.shape
         self._active_agent_map = np.zeros(
             (
                 self._shop_size[0] * scale_factor,
                 self._shop_size[1] * scale_factor,
             ),
-            dtype=np.bool_,
+            dtype=np.int8,
         )
         self._passive_agent_map = np.zeros_like(self._active_agent_map)
+
+        self._adjust_probability = adjust_probability
 
         self.entrances = np.argwhere(self._shop_map.layout_array == "I")
         self.exits = np.argwhere(self._shop_map.layout_array == "E")
@@ -68,6 +73,16 @@ class StateMap:
                     end_position=(ex, ey),
                     shopping_list=self.create_shopping_list(),
                     state_map=self,
+                    adjust_probability=self._adjust_probability,
                 )
 
         return None
+
+    def available_spot(self, position: tuple[int, int]) -> bool:
+        x, y = position
+        shop_x, shop_y = np.array((x, y), dtype=np.int64) // self._scale_factor
+        if not self.get_shop().walkable(shop_x, shop_y):
+            return False
+        if self.get_agent_map()[y, x] == 1:
+            return False
+        return True

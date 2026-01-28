@@ -1,5 +1,6 @@
 from product import Product
 from typing import List, Tuple
+import numpy as np
 
 
 class Agent:
@@ -10,6 +11,7 @@ class Agent:
         end_position: tuple[int, int],
         shopping_list: list[Product],
         state_map,
+        adjust_probability: float = 0.1,
     ) -> None:
         self.name = name
         self.position = position  # position is a tuple (x, y)
@@ -20,6 +22,7 @@ class Agent:
         self._route = None
 
         self._pause_length = 0
+        self._adjust_probability = adjust_probability
 
     def move(self, new_position: tuple[int, int]) -> None:
         """Move the agent to a new position."""
@@ -68,17 +71,30 @@ class Agent:
             next_position = self._route.pop(0)
             if not self._state_map.write_agent_map(
                 next_position
-            ):  # Return True if successful:
+            ):  # Returns True if successful:
                 # Recalculate route if movement was blocked
-                self._state_map.write_agent_map(self.position)
-                self._route = self._route_generator()
-                return False  # Skip movement this turn
-            self.move(next_position)
+                self._route = None
+                next_position = None
 
-            # Product pickup detection
-            # if self._pickup_product():  # TODO: implement product pickup detection
-            #     product = self._shopping_list.pop(0)
-            #     self._pause_length = product.waiting_time
+                if np.random.rand() < self._adjust_probability:
+                    x, y = self.position
+
+                    dirs = [(-1, 0), (0, 1), (1, 0), (0, 1)]
+
+                    for dir in dirs:
+                        dx, dy = dir
+                        nx, ny = x + dx, y + dy
+
+                        if self._state_map.available_spot((nx, ny)):
+                            next_position = (nx, ny)
+                            break
+
+                if not next_position:
+                    if self._state_map.available_spot(self.position):
+                        return self._state_map.write_agent_map(self.position)
+                    return False
+
+            self.move(next_position)
 
         self._state_map.write_agent_map(self.position)
 

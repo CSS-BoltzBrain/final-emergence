@@ -19,8 +19,10 @@ def initworker(shop_map):
 
 
 class Simulation:
-    def __init__(self, filename: str, num_agents=5) -> None:
-        self._state_map = StateMap(filename, scale_factor=1)
+    def __init__(self, filename: str, num_agents=5, adjust_probability=0.1) -> None:
+        self._state_map = StateMap(
+            filename, scale_factor=1, adjust_probability=adjust_probability
+        )
         self._agent_list = self._spawn_agents(num_agents)
         self._num_agents = num_agents
         self.checkpoints = []
@@ -81,7 +83,7 @@ class Simulation:
                 agent._route = route
 
     def checkpoint(self):
-        self.checkpoints += [np.array(self._state_map.get_agent_map(), dtype=np.bool_)]
+        self.checkpoints += [np.array(self._state_map.get_agent_map(), dtype=np.int8)]
 
     def save_checkpoints(self, filename):
         arr = np.array(self.checkpoints, dtype=np.int8)
@@ -99,20 +101,17 @@ def compute_route(args):
 
 if __name__ == "__main__":
     scratch_disk = sys.argv[1]
-    simulation = Simulation("configs/empty.yaml", 192)
-    shop_map = simulation._state_map.get_shop()
-    pathfinder = AgentPathfinder(shop_map)
-    agent_map = simulation._state_map.get_agent_map()
-    print(shop_map.layout_array)
-    print(shop_map.products_list)
-    print(agent_map)
+    timesteps = sys.argv[2]
+    for prob in [0.005, 0.001, 0.1, 0.2, 0.5, 1]:
+        simulation = Simulation("configs/surround.yaml", 96, adjust_probability=prob)
+        shop_map = simulation._state_map.get_shop()
+        pathfinder = AgentPathfinder(shop_map)
+        agent_map = simulation._state_map.get_agent_map()
 
-    tk0 = tqdm(range(300), total=300, disable=None)
-    for i in tk0:
-        simulation.update()
-        if not i % 1:
-            simulation.checkpoint()
+        tk0 = tqdm(range(300), total=300, disable=None)
+        for i in tk0:
+            simulation.update()
+            if not i % 1:
+                simulation.checkpoint()
 
-    simulation.save_checkpoints(f"{scratch_disk}/simulation1000")
-
-    simulation.plot()
+        simulation.save_checkpoints(f"{scratch_disk}/simulation_{timesteps}_{prob}")
