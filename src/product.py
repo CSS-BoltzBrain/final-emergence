@@ -6,6 +6,14 @@ class Product:
         waiting_time: int = 0,
         discount: bool = False,
     ):
+        assert (
+            isinstance(name, str) and len(name) > 0
+        ), "Product name must be non-empty string"
+        assert (
+            isinstance(category, str) and len(category) > 0
+        ), "Category must be non-empty string"
+        assert waiting_time >= 0, "Waiting time cannot be negative"
+        assert isinstance(discount, bool), "Discount must be boolean"
         self._name = name
         self._category = category
         self._waiting_time = waiting_time

@@ -4,32 +4,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.animation import ArtistAnimation
-from maze_solver_v2 import AgentPathfinder
 from multiprocessing import Pool
 
 import sys
-import os
 
 from tqdm import tqdm
 
 
-def initworker(shop_map):
-    global pathfinder
-    pathfinder = AgentPathfinder(shop_map)
-
-
 class Simulation:
     def __init__(self, filename: str, num_agents=5, adjust_probability=0.1) -> None:
+        """Initialize a supermarket simulation.
+
+        Args:
+            filename: Path to shop layout YAML file
+            num_agents: Number of agents to simulate (default 5)
+            adjust_probability: Probability of agent direction changes (default 0.1)
+        """
         self._state_map = StateMap(
             filename, scale_factor=1, adjust_probability=adjust_probability
         )
         self._agent_list = self._spawn_agents(num_agents)
         self._num_agents = num_agents
         self.checkpoints = []
-
-        # self._path_pool = Pool(
-        #     initializer=initworker, initargs=(self._state_map.get_shop(),)
-        # )
 
         self._state_map.update_agent_map()
 
@@ -40,6 +36,10 @@ class Simulation:
         return agent_list
 
     def plot(self):
+        """Display an animated plot of the simulation using saved checkpoints.
+
+        Creates a matplotlib animation showing agent movement over time.
+        """
         fig = plt.figure(figsize=(10, 8))
         ax = fig.subplots()
         self._state_map.get_shop()._plot_layout(ax)
@@ -58,39 +58,81 @@ class Simulation:
         plt.show()
 
     def update(self):
-        assert np.all(self._state_map._passive_agent_map == 0)
+        """Update the simulation by one timestep.
 
-        for agent in self._agent_list:
-            if not agent:
-                continue
-            if agent.update():
-                self._agent_list.remove(agent)
-            else:
-                assert agent.exists()
+        Updates all agent positions, removes agents that reached their destination,
+        spawns new agents, and updates the agent map.
+        """
+        # Passive map should be empty at start of update cycle
+        assert np.all(
+            self._state_map._passive_agent_map == 0
+        ), "Passive map must be empty at cycle start"
 
-        self._agent_list += self._spawn_agents(self._num_agents)
+        # Update all agents and keep only those that haven't reached their destination
+        self._agent_list = [
+            agent for agent in self._agent_list if agent and not agent.update()
+        ]
+
+        # Always attempt to spawn _num_agents (most will fail if entrances are blocked)
+        self._agent_list.extend(
+            [a for a in self._spawn_agents(self._num_agents) if a is not None]
+        )
+
         self._state_map.update_agent_map()
 
-        self._agent_list = [agent for agent in self._agent_list if not None]
-
     def checkpoint(self):
+        """Save the current agent map state as a checkpoint for visualization."""
         self.checkpoints += [np.array(self._state_map.get_agent_map(), dtype=np.int8)]
 
     def save_checkpoints(self, filename):
+        """Save all checkpoints to a NumPy file.
+
+        Args:
+            filename: Path to save checkpoints to (without .npy extension)
+        """
         arr = np.array(self.checkpoints, dtype=np.int8)
         np.save(filename, arr)
 
     def load_checkpoints(self, filename):
+        """Load checkpoints from a NumPy file.
+
+        Args:
+            filename: Path to load checkpoints from
+        """
         arr = np.load(filename)
         self.checkpoints = arr
 
+    def save_fig(self, filename):
+        """Save the simulation animation to a video file.
 
-def compute_route(args):
-    start, shopping_list, end = args
-    return pathfinder.solve_path(start, shopping_list, end)
+        Args:
+            filename: Output video filename (e.g., 'animation.mp4')
+        """
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.subplots()
+        self._state_map.get_shop()._plot_layout(ax)
+
+        cmap = ListedColormap([(0, 0, 0, 0), "black"])
+        ims = []
+        for i in range(len(self.checkpoints)):
+            im = ax.imshow(self.checkpoints[i], animated=True, cmap=cmap)
+            if i == 0:
+                im = ax.imshow(self.checkpoints[i], cmap=cmap)
+            ims.append([im])
+
+        ani = ArtistAnimation(fig, ims, interval=50, blit=True, repeat_delay=1000)
+        ani.save(filename=filename, writer="ffmpeg")
 
 
 def simulate(args):
+    """Run a complete simulation with specified parameters.
+
+    Args:
+        args: Tuple of (scratch_disk, timesteps, prob)
+            scratch_disk: Directory to save results
+            timesteps: Number of simulation steps to run
+            prob: Adjustment probability for agents
+    """
     scratch_disk, timesteps, prob = args
     simulation = Simulation("configs/surround.yaml", 96, adjust_probability=prob)
 
@@ -116,4 +158,3 @@ if __name__ == "__main__":
     with Pool() as pool:
         results = pool.map_async(simulate, args)
         results.get()
-

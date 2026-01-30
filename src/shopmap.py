@@ -1,6 +1,5 @@
 import numpy as np
 import yaml
-import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
 from typing import Dict, List
 from product import Product
@@ -13,7 +12,15 @@ class ShopMap:
     """
 
     def __init__(self, filename: str) -> None:
+        """Initialize a ShopMap by loading layout and products from a YAML file.
+
+        Args:
+            filename: Path to the YAML configuration file
+        """
         self.layout_array = self.load_layout_yaml(filename)
+        assert self.layout_array is not None, "Layout array must be loaded"
+        assert self.layout_array.size > 0, "Layout cannot be empty"
+
         (
             self.products_list,
             self._products_by_code,
@@ -21,19 +28,33 @@ class ShopMap:
         ) = self._load_products(filename)
         self.height, self.width = self.layout_array.shape
 
+        self._walkable_mask = np.isin(self.layout_array, ['0', 'I', 'E'])
+
+        assert self.height > 0 and self.width > 0, f"Invalid dimensions: {self.height}x{self.width}"
+        assert len(self._products_by_code) > 0, "Must have at least exit product"
+
     @property
     def product_dict(self) -> dict[str, Product]:
+        """Get the dictionary mapping product codes to Product objects.
+
+        Returns:
+            dict[str, Product]: Mapping of product codes (e.g., 'P1') to Product instances
+        """
         return self._products_by_code
 
     def load_layout_yaml(self, filename: str) -> np.ndarray[str]:
         """
-        Load a supermarket layout from a yaml file, return an np array of strings.
+        Load a supermarket layout from a yaml file, return an np.array of strings.
         """
         with open(filename, "r") as f:
             data = yaml.safe_load(f)
 
         width: int = data["width"]
         height: int = data["height"]
+
+        assert width > 0, f"Width must be positive, got {width}"
+        assert height > 0, f"Height must be positive, got {height}"
+        assert width < 10000 and height < 10000, "Dimensions unreasonably large"
 
         grid = np.full((height, width), "0", dtype="<U4")
 
@@ -45,7 +66,9 @@ class ShopMap:
 
         # --- Walls ---
         for wall in data.get("walls", []):
-            fill_rectangle(wall["x"], wall["y"], wall["width"], wall["height"], "#")
+            fill_rectangle(
+                wall["x"], wall["y"], wall["width"], wall["height"], "#"
+            )
 
         # --- Entrances ---
         for entrance in data.get("entrance", []):
@@ -98,6 +121,13 @@ class ShopMap:
         return grid
 
     def _plot_layout(self, ax) -> None:
+        """Render the shop layout on a matplotlib axes.
+
+        Visualizes walls, entrances, exits, aisles, and product locations.
+
+        Args:
+            ax: Matplotlib axes object to draw on
+        """
         h, w = self.layout_array.shape
         numeric_grid = np.zeros((h, w), dtype=int)
 
@@ -186,7 +216,9 @@ class ShopMap:
                 products_by_category[category].append(product)
                 products_by_code[p["code"]] = product
 
-        products_by_code["E"] = Product(name="Exit", category="Exit", waiting_time=0)
+        products_by_code["E"] = Product(
+            name="Exit", category="Exit", waiting_time=0
+        )
 
         return products_list, products_by_code, products_by_category
 
@@ -200,10 +232,22 @@ class ShopMap:
         # Add the exit at the end
         shopping_list.append(self._products_by_code["E"])
 
+        assert len(shopping_list) > 0, "Shopping list must contain at least exit"
+        assert all(isinstance(p, Product) for p in shopping_list), "All items must be Product instances"
+        assert shopping_list[-1].category == "Exit", "Last item must be Exit"
+
         return shopping_list
 
     def walkable(self, x, y):
+        """Check if a position on the shop map is walkable.
+
+        Args:
+            x: X coordinate (column)
+            y: Y coordinate (row)
+
+        Returns:
+            bool: True if position is walkable ('0', 'I', or 'E'), False otherwise
+        """
         if not (0 <= y < self.height and 0 <= x < self.width):
             return False
-        val = self.layout_array[y, x]
-        return val == "0" or val == "I" or val == "E"
+        return self._walkable_mask[y, x]
