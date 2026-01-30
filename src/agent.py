@@ -12,6 +12,7 @@ class Agent:
         shopping_list: list[Product],
         state_map,
         adjust_probability: float = 0.1,
+        init_dir: tuple[int, int] = None,
     ) -> None:
         self.name = name
         self.position = position  # position is a tuple (x, y)
@@ -23,6 +24,9 @@ class Agent:
 
         self._pause_length = 0
         self._adjust_probability = adjust_probability
+
+        self._dir = init_dir
+        self._dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
     def move(self, new_position: tuple[int, int]) -> None:
         """Move the agent to a new position."""
@@ -62,40 +66,35 @@ class Agent:
 
     def update(self) -> bool:
         """Update the agent's state."""
-        # Pausing mechanism for product pickup
-        if self._pause_length > 0:
-            self._pause_length -= 1
-            return False
+        x, y = self.position
 
-        if self._route:
-            next_position = self._route.pop(0)
-            if not self._state_map.write_agent_map(
-                next_position
-            ):  # Returns True if successful:
-                # Recalculate route if movement was blocked
-                self._route = None
-                next_position = None
+        assert self._state_map._passive_agent_map[y, x] == 0
 
-                if np.random.rand() < self._adjust_probability:
-                    x, y = self.position
+        self._route = (0, 0)
+        if not self._dir:
+            dir = np.random.randint(0, 4)
+            self._dir = self._dirs[dir]
 
-                    dirs = [(-1, 0), (0, 1), (1, 0), (0, 1)]
+        if np.random.rand() < self._adjust_probability:
+            prev_dir = self._dir
+            dir = np.random.randint(0, 4)
+            self._dir = self._dirs[dir]
 
-                    for dir in dirs:
-                        dx, dy = dir
-                        nx, ny = x + dx, y + dy
+            while prev_dir == self._dir:
+                dir = np.random.randint(0, 4)
+                self._dir = self._dirs[dir]
 
-                        if self._state_map.available_spot((nx, ny)):
-                            next_position = (nx, ny)
-                            break
+        x, y = self.position
+        dx, dy = self._dir
+        nx, ny = x + dx, y + dy
 
-                if not next_position:
-                    if self._state_map.available_spot(self.position):
-                        return self._state_map.write_agent_map(self.position)
-                    return False
-
-            self.move(next_position)
+        if self._state_map.available_spot((nx, ny)):
+            self.move((nx, ny))
 
         self._state_map.write_agent_map(self.position)
 
         return self.position == self._end_position
+
+    def exists(self):
+        x, y = self.position
+        return self._state_map._passive_agent_map[y, x] == 1

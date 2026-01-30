@@ -33,9 +33,9 @@ class StateMap:
 
     def write_agent_map(self, position: tuple[int, int]) -> bool:
         x, y = position
-        if self._passive_agent_map[y, x] == 1:
-            return False  # Position already occupied
+
         self._passive_agent_map[y, x] = 1
+
         return True
 
     def update_agent_map(self) -> None:
@@ -65,8 +65,17 @@ class StateMap:
             es = self.exits[mask]
             ey, ex = es[np.random.randint(0, len(es))]
 
-            if self._active_agent_map[y, x] == 0:
-                self._active_agent_map[y, x] = 1
+            if x == 0:
+                init_dir = (1, 0)
+            elif y == 0:
+                init_dir = (0, 1)
+            elif x == self._shop_size[1] - 1:
+                init_dir = (-1, 0)
+            elif y == self._shop_size[0] - 1:
+                init_dir = (0, -1)
+
+            if self.available_spot((x, y)):
+                self.write_agent_map((x, y))
                 return Agent(
                     name="Test agent",
                     position=(x, y),
@@ -74,6 +83,7 @@ class StateMap:
                     shopping_list=self.create_shopping_list(),
                     state_map=self,
                     adjust_probability=self._adjust_probability,
+                    init_dir=init_dir,
                 )
 
         return None
@@ -83,6 +93,6 @@ class StateMap:
         shop_x, shop_y = np.array((x, y), dtype=np.int64) // self._scale_factor
         if not self.get_shop().walkable(shop_x, shop_y):
             return False
-        if self.get_agent_map()[y, x] == 1:
+        if self._active_agent_map[y, x] or self._passive_agent_map[y, x]:
             return False
         return True
