@@ -5,7 +5,7 @@ class Product:
         category: str,
         waiting_time: int = 0,
         discount: bool = False,
-    ):
+    ) -> None:
         assert (
             isinstance(name, str) and len(name) > 0
         ), "Product name must be non-empty string"
@@ -19,7 +19,7 @@ class Product:
         self._waiting_time = waiting_time
         self._discount = discount
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"Product(name={self.name}, category={self.category}, "
             f"waiting_time={self.waiting_time})"

@@ -12,7 +12,8 @@ class ShopMap:
     """
 
     def __init__(self, filename: str) -> None:
-        """Initialize a ShopMap by loading layout and products from a YAML file.
+        """Initialize a ShopMap by loading layout and products from a
+        YAML file.
 
         Args:
             filename: Path to the YAML configuration file
@@ -28,23 +29,47 @@ class ShopMap:
         ) = self._load_products(filename)
         self.height, self.width = self.layout_array.shape
 
-        self._walkable_mask = np.isin(self.layout_array, ['0', 'I', 'E'])
+        self._walkable_mask = np.isin(self.layout_array, ["0", "I", "E"])
 
-        assert self.height > 0 and self.width > 0, f"Invalid dimensions: {self.height}x{self.width}"
-        assert len(self._products_by_code) > 0, "Must have at least exit product"
+        assert (
+            self.height > 0 and self.width > 0
+        ), f"Invalid dimensions: {self.height}x{self.width}"
+        assert (
+            len(self._products_by_code) > 0
+        ), "Must have at least exit product"
 
     @property
     def product_dict(self) -> dict[str, Product]:
         """Get the dictionary mapping product codes to Product objects.
 
         Returns:
-            dict[str, Product]: Mapping of product codes (e.g., 'P1') to Product instances
+            dict[str, Product]: Mapping of product codes (e.g., 'P1')
+            to Product instances
         """
         return self._products_by_code
 
-    def load_layout_yaml(self, filename: str) -> np.ndarray[str]:
+    def _fill_rectangle(
+        self, grid: np.ndarray, x: int, y: int, w: int, h: int, value: str
+    ) -> None:
+        """Fill a rectangular area in the grid with a specific value.
+
+        Args:
+            grid: The grid array to modify
+            x: Starting x coordinate
+            y: Starting y coordinate
+            w: Width of rectangle
+            h: Height of rectangle
+            value: Value to fill with
         """
-        Load a supermarket layout from a yaml file, return an np.array of strings.
+        height, width = grid.shape
+        for i in range(y, y + h):
+            for j in range(x, x + w):
+                if 0 <= i < height and 0 <= j < width:
+                    grid[i, j] = value
+
+    def load_layout_yaml(self, filename: str) -> np.ndarray:
+        """
+        Load a supermarket layout from a yaml file, return an np.ndarray.
         """
         with open(filename, "r") as f:
             data = yaml.safe_load(f)
@@ -54,20 +79,16 @@ class ShopMap:
 
         assert width > 0, f"Width must be positive, got {width}"
         assert height > 0, f"Height must be positive, got {height}"
-        assert width < 10000 and height < 10000, "Dimensions unreasonably large"
+        assert (
+            width < 10000 and height < 10000
+        ), "Dimensions unreasonably large"
 
         grid = np.full((height, width), "0", dtype="<U4")
 
-        def fill_rectangle(x: int, y: int, w: int, h: int, value: str):
-            for i in range(y, y + h):
-                for j in range(x, x + w):
-                    if 0 <= i < height and 0 <= j < width:
-                        grid[i, j] = value
-
         # --- Walls ---
         for wall in data.get("walls", []):
-            fill_rectangle(
-                wall["x"], wall["y"], wall["width"], wall["height"], "#"
+            self._fill_rectangle(
+                grid, wall["x"], wall["y"], wall["width"], wall["height"], "#"
             )
 
         # --- Entrances ---
@@ -232,13 +253,17 @@ class ShopMap:
         # Add the exit at the end
         shopping_list.append(self._products_by_code["E"])
 
-        assert len(shopping_list) > 0, "Shopping list must contain at least exit"
-        assert all(isinstance(p, Product) for p in shopping_list), "All items must be Product instances"
+        assert (
+            len(shopping_list) > 0
+        ), "Shopping list must contain at least exit"
+        assert all(
+            isinstance(p, Product) for p in shopping_list
+        ), "All items must be Product instances"
         assert shopping_list[-1].category == "Exit", "Last item must be Exit"
 
         return shopping_list
 
-    def walkable(self, x, y):
+    def walkable(self, x, y) -> np.bool_:
         """Check if a position on the shop map is walkable.
 
         Args:
@@ -246,8 +271,9 @@ class ShopMap:
             y: Y coordinate (row)
 
         Returns:
-            bool: True if position is walkable ('0', 'I', or 'E'), False otherwise
+            bool: True if position is walkable ('0', 'I', or 'E'),
+            False otherwise
         """
         if not (0 <= y < self.height and 0 <= x < self.width):
-            return False
+            return np.bool_(False)
         return self._walkable_mask[y, x]

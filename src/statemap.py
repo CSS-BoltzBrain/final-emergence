@@ -8,7 +8,8 @@ class StateMap:
     def __init__(
         self, filename: str, scale_factor: int, adjust_probability: float
     ) -> None:
-        """Initialize the state map for tracking agent positions and shop layout.
+        """Initialize the state map for tracking agent positions and
+        shop layout.
 
         Args:
             filename: Path to shop layout YAML file
@@ -74,9 +75,11 @@ class StateMap:
         return True
 
     def update_agent_map(self) -> None:
-        """Transfer agent positions from passive to active map and clear passive map.
+        """Transfer agent positions from passive to active map and clear
+        passive map.
 
-        This implements double-buffering for agent positions during simulation updates.
+        This implements double-buffering for agent positions during
+        simulation updates.
         """
         self._active_agent_map[:] = self._passive_agent_map
         self._passive_agent_map.fill(0)
@@ -105,13 +108,15 @@ class StateMap:
         return self._shop_map.generate_shopping_list()
 
     def spawn_agent_start(self) -> Agent | None:
-        """Spawn a new agent at a random entrance with a random exit destination.
+        """Spawn a new agent at a random entrance with a random exit
+        destination.
 
         Selects an available entrance, pairs it with a non-aligned exit,
         generates a shopping list, and creates an Agent instance.
 
         Returns:
-            Agent | None: New Agent instance, or None if no valid spawn location
+            Agent | None: New Agent instance, or None if no valid spawn
+            location
         """
         # Fast batch check: are ANY entrances available?
         entrance_xs = self.entrances[:, 1]
@@ -133,7 +138,8 @@ class StateMap:
         # Shuffle only the available entrance indices
         np.random.shuffle(available_indices)
 
-        # Try available entrances (limit to first 10 to avoid excessive checking)
+        # Try available entrances (limit to first 10 to avoid
+        # excessive checking)
         max_attempts = min(10, len(available_indices))
         for idx in available_indices[:max_attempts]:
             entrance = self.entrances[idx]
@@ -181,7 +187,8 @@ class StateMap:
     def available_spot(self, position: tuple[int, int]) -> bool:
         """Check if a position is available for agent placement.
 
-        Verifies that the position is walkable and not occupied by another agent.
+        Verifies that the position is walkable and not occupied by
+        another agent.
 
         Args:
             position: Position to check as (x, y) tuple
@@ -193,9 +200,9 @@ class StateMap:
         # Avoid np.array creation - direct integer division
         shop_x = x // self._scale_factor
         shop_y = y // self._scale_factor
-        
+
         # Short-circuit evaluation: check occupancy first (fastest check)
         if self._active_agent_map[y, x] or self._passive_agent_map[y, x]:
             return False
-        
+
         return self.get_shop().walkable(shop_x, shop_y)

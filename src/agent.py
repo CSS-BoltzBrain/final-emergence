@@ -1,5 +1,5 @@
 from product import Product
-from typing import List, Tuple
+from typing import Tuple
 import numpy as np
 
 
@@ -14,7 +14,8 @@ class Agent:
         adjust_probability: float = 0.1,
         init_dir: tuple[int, int] = None,
     ) -> None:
-        """Initialize an agent with name, starting position, destination, and shopping list.
+        """Initialize an agent with name, starting position, destination,
+        and shopping list.
 
         Args:
             name: Unique identifier for the agent
@@ -22,7 +23,8 @@ class Agent:
             end_position: Target (x, y) coordinates (typically an exit)
             shopping_list: List of Product objects to collect
             state_map: Reference to the StateMap managing the simulation
-            adjust_probability: Probability of randomly changing direction (default 0.1)
+            adjust_probability: Probability of randomly changing direction
+            (default 0.1)
             init_dir: Initial movement direction as (dx, dy) tuple
         """
         self.name = name
@@ -62,16 +64,24 @@ class Agent:
         return self.position
 
     def __str__(self) -> str:
-        return f"Agent {self.name} at position {self.position} going to {self._end_position}"
+        return (
+            f"Agent {self.name} at position {self.get_position()}"
+            f"going to {self._end_position}"
+        )
 
     def __repr__(self) -> str:
-        return f"Agent {self.name} at position {self.position} going to {self._end_position}"
+        return (
+            f"Agent {self.name} at position {self.get_position()}"
+            f"going to {self._end_position}"
+        )
 
-    def _route_generator(self) -> List[Tuple[int, int]]:
+    def _route_generator(self) -> None:
         """Generate a route based on the shopping list."""
         return None
 
-    def request_route(self):
+    def request_route(
+        self,
+    ) -> Tuple[tuple[int, int], list[Product], tuple[int, int]]:
         """Return a tuple containing the agent's current position, shopping
         list, and destination.
 
@@ -79,22 +89,31 @@ class Agent:
             Tuple of (position, shopping_list, end_position) for route planning
         """
         return (
-            self.position,
+            self.get_position(),
             self._shopping_list,
             self._end_position,
         )
 
     def update(self) -> bool:
-        """Update the agent's state.
+        """Update the agent's state for one simulation timestep.
+
+        Performs movement logic including:
+        - Direction initialization and random adjustment
+        - Next position calculation and collision checking
+        - Position update if move is valid
+        - Writing position to passive agent map
 
         Returns:
-            bool: True if the agent has reached its destination, False otherwise"""
-        x, y = self.position
+            bool: True if the agent has reached its destination,
+            False otherwise
+        """
+        x, y = self.get_position()
 
         # Verify invariant: no other agent has moved to our position this cycle
-        assert (
-            self._state_map._passive_agent_map[y, x] == 0
-        ), f"Collision at ({x}, {y}): passive_agent_map[{y}, {x}] = {self._state_map._passive_agent_map[y, x]}"
+        assert self._state_map._passive_agent_map[y, x] == 0, (
+            f"Collision at ({x}, {y}): passive_agent_map[{y}, {x}] ="
+            f"{self._state_map._passive_agent_map[y, x]}"
+        )
 
         self._route = (0, 0)
         if not self._dir:
@@ -113,27 +132,30 @@ class Agent:
 
         # Inline available_spot check to avoid function call overhead
         state_map = self._state_map
-        shop_x, shop_y = nx // state_map._scale_factor, ny // state_map._scale_factor
+        shop_x, shop_y = (
+            nx // state_map._scale_factor,
+            ny // state_map._scale_factor,
+        )
 
         if (
             state_map.get_shop().walkable(shop_x, shop_y)
             and not state_map._active_agent_map[ny, nx]
             and not state_map._passive_agent_map[ny, nx]
         ):
-            self.position = (nx, ny)
+            self.move((nx, ny))
 
         # Write final position to passive map (whether moved or stayed)
-        x, y = self.position
+        x, y = self.get_position()
         state_map._passive_agent_map[y, x] += 1
 
-        return self.position == self._end_position
+        return self.get_position() == self._end_position
 
-    def exists(self):
+    def exists(self) -> bool:
         """Check if the agent exists at its current position on the
         passive agent map.
 
         Returns:
             bool: True if agent is marked at its position, False otherwise
         """
-        x, y = self.position
+        x, y = self.get_position()
         return self._state_map._passive_agent_map[y, x] == 1
