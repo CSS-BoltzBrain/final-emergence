@@ -113,18 +113,45 @@ class StateMap:
         Returns:
             Agent | None: New Agent instance, or None if no valid spawn location
         """
-        np.random.shuffle(self.entrances)
+        # Fast batch check: are ANY entrances available?
+        entrance_xs = self.entrances[:, 1]
+        entrance_ys = self.entrances[:, 0]
 
-        for entrance in self.entrances:
+        # Vectorized availability check for all entrances at once
+        occupied = (
+            self._active_agent_map[entrance_ys, entrance_xs]
+            | self._passive_agent_map[entrance_ys, entrance_xs]
+        )
+
+        # If all entrances blocked, exit early
+        if np.all(occupied):
+            return None
+
+        # Get indices of available entrances
+        available_indices = np.where(~occupied)[0]
+
+        # Shuffle only the available entrance indices
+        np.random.shuffle(available_indices)
+
+        # Try available entrances (limit to first 10 to avoid excessive checking)
+        max_attempts = min(10, len(available_indices))
+        for idx in available_indices[:max_attempts]:
+            entrance = self.entrances[idx]
             y, x = entrance
+
+            # Pre-compute exit mask (non-aligned exits)
             y_mask = self.exits[:, 0] != y
             x_mask = self.exits[:, 1] != x
-
             mask = y_mask & x_mask
 
             es = self.exits[mask]
-            ey, ex = es[np.random.randint(0, len(es))]
+            n = len(es)
+            if n == 0:
+                continue
 
+            ey, ex = es[np.random.randint(0, n)]
+
+            # Determine initial direction based on entrance position
             if x == 0:
                 init_dir = (1, 0)
             elif y == 0:
@@ -133,7 +160,10 @@ class StateMap:
                 init_dir = (-1, 0)
             elif y == self._shop_size[0] - 1:
                 init_dir = (0, -1)
+            else:
+                init_dir = (1, 0)  # default
 
+            # Double-check availability (may have changed during iteration)
             if self.available_spot((x, y)):
                 self.write_agent_map((x, y))
                 return Agent(
@@ -160,10 +190,12 @@ class StateMap:
             bool: True if position is available, False otherwise
         """
         x, y = position
-        shop_x, shop_y = np.array((x, y), dtype=np.int64) // self._scale_factor
-        if not self.get_shop().walkable(shop_x, shop_y):
-            return False
-        # Check both active map (agents that haven't updated) and passive map (agents that moved this cycle)
+        # Avoid np.array creation - direct integer division
+        shop_x = x // self._scale_factor
+        shop_y = y // self._scale_factor
+        
+        # Short-circuit evaluation: check occupancy first (fastest check)
         if self._active_agent_map[y, x] or self._passive_agent_map[y, x]:
             return False
-        return True
+        
+        return self.get_shop().walkable(shop_x, shop_y)

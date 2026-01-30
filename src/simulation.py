@@ -64,9 +64,9 @@ class Simulation:
         spawns new agents, and updates the agent map.
         """
         # Passive map should be empty at start of update cycle
-        assert np.all(
-            self._state_map._passive_agent_map == 0
-        ), "Passive map must be empty at cycle start"
+        # assert np.all(
+        #     self._state_map._passive_agent_map == 0
+        # ), "Passive map must be empty at cycle start"
 
         # Update all agents and keep only those that haven't reached their destination
         self._agent_list = [

@@ -38,6 +38,9 @@ class Agent:
 
         self._dir = init_dir
         self._dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        self._dir_alternatives = {
+            d: [x for x in self._dirs if x != d] for d in self._dirs
+        }
 
         assert (
             0 <= adjust_probability <= 1
@@ -89,8 +92,9 @@ class Agent:
         x, y = self.position
 
         # Verify invariant: no other agent has moved to our position this cycle
-        assert self._state_map._passive_agent_map[y, x] == 0, \
-            f"Collision at ({x}, {y}): passive_agent_map[{y}, {x}] = {self._state_map._passive_agent_map[y, x]}"
+        assert (
+            self._state_map._passive_agent_map[y, x] == 0
+        ), f"Collision at ({x}, {y}): passive_agent_map[{y}, {x}] = {self._state_map._passive_agent_map[y, x]}"
 
         self._route = (0, 0)
         if not self._dir:
@@ -99,19 +103,28 @@ class Agent:
 
         if np.random.rand() < self._adjust_probability:
             prev_dir = self._dir
-            # Pick a different direction - avoid infinite loop
-            available_dirs = [d for d in self._dirs if d != prev_dir]
-            self._dir = available_dirs[np.random.randint(0, len(available_dirs))]
+            # Pick a different direction
+            available_dirs = self._dir_alternatives[prev_dir]
+            self._dir = available_dirs[np.random.randint(0, 3)]
 
-        x, y = self.position
+        # Calculate next position inline
         dx, dy = self._dir
         nx, ny = x + dx, y + dy
 
-        if self._state_map.available_spot((nx, ny)):
-            self.move((nx, ny))
+        # Inline available_spot check to avoid function call overhead
+        state_map = self._state_map
+        shop_x, shop_y = nx // state_map._scale_factor, ny // state_map._scale_factor
+
+        if (
+            state_map.get_shop().walkable(shop_x, shop_y)
+            and not state_map._active_agent_map[ny, nx]
+            and not state_map._passive_agent_map[ny, nx]
+        ):
+            self.position = (nx, ny)
 
         # Write final position to passive map (whether moved or stayed)
-        self._state_map.write_agent_map(self.position)
+        x, y = self.position
+        state_map._passive_agent_map[y, x] += 1
 
         return self.position == self._end_position
 
