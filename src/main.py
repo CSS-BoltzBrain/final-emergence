@@ -1,6 +1,9 @@
 from simulation import simulate
 from multiprocessing import Pool
 import argparse
+import random
+
+import numpy as np
 
 
 if __name__ == "__main__":
@@ -33,8 +36,23 @@ if __name__ == "__main__":
         default=96,
         help="Number of agents to spawn per iteration (default: 96)",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed for deterministic runs (default: 42)",
+    )
+    parser.add_argument(
+        "--random-seed",
+        action="store_true",
+        help="Disable deterministic seeding for randomized runs",
+    )
 
     args = parser.parse_args()
+
+    if not args.random_seed:
+        random.seed(args.seed)
+        np.random.seed(args.seed)
 
     if args.mode == "baseline":
         # Run single simulation with specified probability
