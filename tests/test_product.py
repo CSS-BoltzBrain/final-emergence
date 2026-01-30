@@ -6,7 +6,7 @@ import sys
 import os
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from product import Product
 
@@ -22,10 +22,7 @@ class TestProductSmoke:
     def test_product_with_all_params(self):
         """Test Product creation with all parameters."""
         product = Product(
-            name="Bread",
-            category="Bakery",
-            waiting_time=5,
-            discount=True
+            name="Bread", category="Bakery", waiting_time=5, discount=True
         )
         assert product is not None
 
