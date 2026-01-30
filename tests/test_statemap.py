@@ -187,7 +187,7 @@ class TestStateMapAvailableSpot:
         entrances = state_map.entrances
         if len(entrances) > 0:
             y, x = entrances[0]
-            assert state_map.available_spot((x, y)) == True
+            assert bool(state_map.available_spot((x, y))) is True
 
     def test_available_spot_occupied(self):
         """Test that occupied positions are not available."""
@@ -198,7 +198,7 @@ class TestStateMapAvailableSpot:
         if len(entrances) > 0:
             y, x = entrances[0]
             state_map.write_agent_map((x, y))
-            assert state_map.available_spot((x, y)) == False
+            assert state_map.available_spot((x, y)) is False
 
     def test_available_spot_after_update(self):
         """Test spot availability after map update."""
@@ -210,7 +210,7 @@ class TestStateMapAvailableSpot:
             y, x = entrances[0]
             state_map.write_agent_map((x, y))
             state_map.update_agent_map()
-            assert state_map.available_spot((x, y)) == False
+            assert state_map.available_spot((x, y)) is False
 
 
 class TestStateMapScaling:

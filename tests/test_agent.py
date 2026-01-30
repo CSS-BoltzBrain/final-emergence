@@ -3,7 +3,6 @@ Unit tests for the Agent class.
 """
 
 import pytest
-import numpy as np
 import sys
 import os
 

@@ -107,7 +107,7 @@ class TestSimulationUpdate:
         sim = Simulation(
             "configs/empty.yaml", num_agents=2, adjust_probability=0.1
         )
-        initial_sum = np.sum(sim._state_map.get_agent_map())
+        _ = np.sum(sim._state_map.get_agent_map())
         sim.update()
         # Agent map should have some changes (could be same if no movement)
         assert isinstance(
@@ -276,7 +276,7 @@ class TestSimulationIntegration:
         sim = Simulation(
             "configs/empty.yaml", num_agents=1, adjust_probability=0.1
         )
-        initial_agent_count = len(
+        _ = len(
             [a for a in sim._agent_list if a is not None]
         )
 

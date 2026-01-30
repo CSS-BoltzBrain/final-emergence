@@ -184,7 +184,7 @@ class StateMap:
 
         return None
 
-    def available_spot(self, position: tuple[int, int]) -> bool:
+    def available_spot(self, position: tuple[int, int]) -> np.bool_:
         """Check if a position is available for agent placement.
 
         Verifies that the position is walkable and not occupied by
@@ -194,7 +194,7 @@ class StateMap:
             position: Position to check as (x, y) tuple
 
         Returns:
-            bool: True if position is available, False otherwise
+            np.bool_: True if position is available, False otherwise
         """
         x, y = position
         # Avoid np.array creation - direct integer division
@@ -203,6 +203,6 @@ class StateMap:
 
         # Short-circuit evaluation: check occupancy first (fastest check)
         if self._active_agent_map[y, x] or self._passive_agent_map[y, x]:
-            return False
+            return np.bool_(False)
 
         return self.get_shop().walkable(shop_x, shop_y)
