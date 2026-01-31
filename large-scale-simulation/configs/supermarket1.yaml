@@ -1,0 +1,342 @@
+width: 60
+height: 30
+
+walls:
+  # Top boundary
+  - type: rectangle
+    x: 0
+    y: 29
+    width: 60
+    height: 1
+  # Bottom boundary
+  - type: rectangle
+    x: 0
+    y: 0
+    width: 60
+    height: 1
+  # Right boundary
+  - type: rectangle
+    x: 59
+    y: 0
+    height: 30
+    width: 1
+  # Left boundary 1
+  - type: rectangle
+    x: 0
+    y: 0
+    width: 1
+    height: 30
+
+shelves:
+  # Shelf 1-1
+  - type: rectangle
+    x: 3
+    y: 3
+    width: 25
+    height: 1
+    category: breakfast
+
+  # Shelf 1-2
+  - type: rectangle
+    x: 3
+    y: 4
+    width: 25
+    height: 1
+    category: candy
+
+  # Shelf 2-1
+  - type: rectangle
+    x: 3
+    y: 10
+    width: 25
+    height: 1
+    category: bath
+  # Shelf 2-2
+  - type: rectangle
+    x: 3
+    y: 9
+    width: 25
+    height: 1
+    category: dairy
+
+  # Shelf 3-1
+  - type: rectangle
+    x: 32
+    y: 10
+    width: 25
+    height: 1
+    category: meat
+  # Shelf 3-2
+  - type: rectangle
+    x: 32
+    y: 9
+    width: 25
+    height: 1
+    category: seafood
+
+  # Shelf 4-1
+  - type: rectangle
+    x: 32
+    y: 4
+    width: 25
+    height: 1
+    category: produce
+  # Shelf 4-2
+  - type: rectangle
+    x: 32
+    y: 3
+    width: 25
+    height: 1
+    category: flowers
+
+  # Shelf 5-1
+  - type: rectangle
+    x: 3
+    y: 16
+    width: 25
+    height: 1
+    category: pharmacy
+  # Shelf 5-2
+  - type: rectangle
+    x: 3
+    y: 17
+    width: 25
+    height: 1
+    category: drinks
+
+  # Shelf 6-1
+  - type: rectangle
+    x: 32
+    y: 16
+    width: 25
+    height: 1
+    category: chocolate
+  # Shelf 6-2
+  - type: rectangle
+    x: 32
+    y: 17
+    width: 25
+    height: 1
+    category: cookies
+
+  # Shelf 7-1
+  - type: rectangle
+    x: 3
+    y: 23
+    width: 25
+    height: 1
+    category: pasta
+  # Shelf 7-2
+  - type: rectangle
+    x: 3
+    y: 24
+    width: 25
+    height: 1
+    category: cleaning
+
+  # Shelf 8-1
+  - type: rectangle
+    x: 32
+    y: 23
+    width: 25
+    height: 1
+    category: alcohol
+    # Shelf 8-2
+  - type: rectangle
+    x: 32
+    y: 24
+    width: 25
+    height: 1
+    category: toilet
+
+entrance:
+  - type: line
+    start: [0, 4]
+    end: [0, 9]
+
+exit:
+  - type: line
+    start: [0,20]
+    end: [0,24]
+
+categories:
+  breakfast:
+    - name: bread
+      code: P1
+      popularity: 0.8
+    - name: cereal
+      code: P2
+      popularity: 0.6
+
+  dairy:
+    - name: milk
+      code: P3
+      popularity: 0.9
+    - name: yoghurt
+      code: P4
+      popularity: 0.5
+    - name: butter
+      code: P5
+      popularity: 0.7
+    - name: cheese
+      code: P6
+      popularity: 0.8
+    - name: cream
+      code: P7
+      popularity: 0.4
+
+  candy:
+    - name: gummy_candies
+      code: P8
+      popularity: 0.6
+    - name: hard_candies
+      code: P9
+      popularity: 0.4
+    - name: lollipops
+      code: P10
+      popularity: 0.3
+
+  chocolate:
+    - name: milk_chocolate
+      code: P11
+      popularity: 0.7
+    - name: dark_chocolate
+      code: P12
+      popularity: 0.5
+    - name: chocolate_bars
+      code: P13
+      popularity: 0.8
+
+  cookies:
+    - name: chocolate_chip_cookies
+      code: P14
+      popularity: 0.8
+    - name: butter_cookies
+      code: P15
+      popularity: 0.5
+    - name: oatmeal_cookies
+      code: P16
+      popularity: 0.4
+
+  pasta:
+    - name: spaghetti
+      code: P17
+      popularity: 0.9
+    - name: penne
+      code: P18
+      popularity: 0.7
+    - name: lasagna_sheets
+      code: P19
+      popularity: 0.5
+
+  bath:
+    - name: shampoo
+      code: P20
+      popularity: 0.8
+    - name: body_wash
+      code: P21
+      popularity: 0.7
+    - name: conditioner
+      code: P22
+      popularity: 0.4
+
+  meat:
+    - name: chicken
+      code: P23
+      popularity: 0.9
+    - name: beef
+      code: P24
+      popularity: 0.7
+    - name: pork
+      code: P25
+      popularity: 0.6
+
+  toilet:
+    - name: toilet_paper
+      code: P26
+      popularity: 0.95
+    - name: paper_towels
+      code: P27
+      popularity: 0.7
+    - name: tissues
+      code: P28
+      popularity: 0.5
+
+  seafood:
+    - name: salmon
+      code: P29
+      popularity: 0.7
+    - name: shrimp
+      code: P30
+      popularity: 0.6
+    - name: tuna
+      code: P31
+      popularity: 0.5
+
+  flowers:
+    - name: bouquets
+      code: P32
+      popularity: 0.3
+    - name: potted_plants
+      code: P33
+      popularity: 0.2
+
+  pharmacy:
+    - name: painkillers
+      code: P34
+      popularity: 0.6
+    - name: vitamins
+      code: P35
+      popularity: 0.5
+    - name: cold_medicine
+      code: P36
+      popularity: 0.4
+
+  produce:
+    - name: apples
+      code: P37
+      popularity: 0.9
+    - name: bananas
+      code: P38
+      popularity: 0.85
+    - name: tomatoes
+      code: P39
+      popularity: 0.7
+    - name: lettuce
+      code: P40
+      popularity: 0.6
+
+  drinks:
+    - name: water
+      code: P41
+      popularity: 0.95
+    - name: soda
+      code: P42
+      popularity: 0.7
+    - name: juice
+      code: P43
+      popularity: 0.6
+
+  cleaning:
+    - name: detergent
+      code: P44
+      popularity: 0.8
+    - name: dish_soap
+      code: P45
+      popularity: 0.6
+    - name: disinfectant
+      code: P46
+      popularity: 0.7
+
+  alcohol:
+    - name: beer
+      code: P47
+      popularity: 0.8
+    - name: wine
+      code: P48
+      popularity: 0.6
+    - name: spirits
+      code: P49
+      popularity: 0.4
+
+
