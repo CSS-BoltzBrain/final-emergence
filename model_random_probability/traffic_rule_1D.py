@@ -28,6 +28,10 @@ def traffic_rule_step(array):
     return next_array
 
 def traffic_rule(starting_array, timesteps):
+    """
+    Executes the traffic rule step for the chosen number of timesteps,
+    remembers and returns all configurations
+    """
     current_array = starting_array
     configurations = [current_array]
     for i in range(timesteps):
@@ -51,6 +55,7 @@ def init():
     return dots,
 
 def update(frame):
+    """Updates the global state for each animation frame"""
     array = configurations[frame]
     x = [i for i, val in enumerate(array) if val == 1]
     y = [0.5] * len(x)

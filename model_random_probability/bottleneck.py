@@ -33,6 +33,7 @@ for y in range(HEIGHT):
         obstacles.add((wall_x, y))
 
 class Person:
+    """Represents an individual pedestrian agent in the grid."""
     def __init__(self, pid, x, y):
         self.id = pid
         self.x = x
@@ -100,6 +101,7 @@ def aligned_with_opening(person, wall_x, gap_top, gap_bottom, x_tol=1):
 
 
 def free_space_right(person, obstacles, occupied):
+    """Checks if the cell immediately to the right is available"""
     nx = person.x + 1
     ny = person.y
     return (
@@ -111,6 +113,14 @@ def free_space_right(person, obstacles, occupied):
 
 
 def move(person, obstacles, occupied, wall_x):
+    """
+    Movement for agent: navigation and collision avoidance.
+    
+    The decision hierarchy follows:
+    1. Goal Seeking: Attempt to move right if the path is clear or aligned with a gap.
+    2. Obstacle Avoidance: If blocked by the wall, search for the nearest vertical exit.
+    3. Conflict Resolution: If the target cell is occupied by another agent, wait (jam).
+    """
     if not person.active:
         return
     
@@ -174,6 +184,7 @@ total_jam = []
 throughput = []
 
 def update(frame):
+    """Updates the global state for each animation frame"""
     occupied = {(p.x, p.y) for p in people if p.active}
 
     random.shuffle(people)

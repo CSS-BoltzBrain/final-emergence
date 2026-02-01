@@ -8,12 +8,11 @@ TIMESTEPS = 200
 SAMPLES = 60
 
 def traffic_rule_step(grid):
+    """ One step of the traffic rule, 
+    returns the final grid and the moved that were made"""
     curr = grid.copy()
-    after_lane_change = curr.copy()
+    after_lane_change = curr.copy() # to keep track of movement
     
-    # We use a set to keep track of where cars ARE moving to during this phase
-    # to prevent two cars from moving into the same spot.
-    occupied_next = set()
 
     for j in range(HEIGHT):
         for i in range(WIDTH):
@@ -52,10 +51,9 @@ def traffic_rule_step(grid):
     return final_grid, moves
 
 def calculate_throughput(density):
-    # Fix: Explicitly create a 2D zeros array
+    """ Function to calculate the throughput """
     grid = np.zeros((HEIGHT, WIDTH))
     
-    # Fix: Ensure we fill it correctly as a 2D structure
     num_cars = int(WIDTH * HEIGHT * density)
     indices = random.sample(range(WIDTH * HEIGHT), num_cars)
     for idx in indices:
@@ -64,18 +62,17 @@ def calculate_throughput(density):
         grid[row, col] = 1
         
     total_moves = 0
-    # Stabilization period
-    for _ in range(50):
+    
+    for _ in range(50): # Stabilization period
         grid, _ = traffic_rule_step(grid)
         
-    # Measurement period
-    for _ in range(TIMESTEPS):
+    for _ in range(TIMESTEPS): # Measurement period
         grid, moves = traffic_rule_step(grid)
         total_moves += moves
         
     return total_moves / (WIDTH * HEIGHT * TIMESTEPS)
 
-# --- Execution ---
+# Execution 
 densities = np.linspace(0, 1, SAMPLES)
 throughputs = [calculate_throughput(d) for d in densities]
 

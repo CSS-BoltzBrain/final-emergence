@@ -20,6 +20,7 @@ for y in range(HEIGHT):
         obstacles.add((wall_x, y))
 
 class Person:
+    """Represents an individual pedestrian agent in the grid."""
     def __init__(self, pid, x, y):
         self.id = pid
         self.x = x
@@ -31,6 +32,7 @@ class Person:
         self.wait = False
 
 def spawn_people(n_people):
+    """Initializes agents at random unoccupied positions to the left of the wall."""
     people = []
     occupied = set()
     for i in range(n_people):
@@ -45,14 +47,17 @@ def spawn_people(n_people):
     return people
 
 def forward_blocked(person, obstacles, occupied):
+    """Checks whether the next move is blocked"""
     nx, ny = person.x + person.dx, person.y + person.dy
     return (nx < 0 or nx >= WIDTH or ny < 0 or ny >= HEIGHT or
             (nx, ny) in obstacles or (nx, ny) in occupied)
 
 def near_wall(person, wall_x, dist=7):
+    """Check whether a person is within a given distance of the wall"""
     return abs(person.x - (wall_x - 1)) <= dist
 
 def choose_vertical_direction(person):
+    """Adjust agent direction to steer towards the nearest gap in wall"""
     dist_top = gap_top - person.y
     dist_bottom = gap_bottom - person.y
     if abs(dist_top) < abs(dist_bottom):
@@ -62,11 +67,13 @@ def choose_vertical_direction(person):
     person.dx, person.dy = 0, dy
 
 def aligned_with_opening(person):
+    """Checks if the agent's vertical position matches a gap in the wall"""
     in_top_gap = gap_top - gap_width <= person.y <= gap_top + gap_width
     in_bottom_gap = gap_bottom - gap_width <= person.y <= gap_bottom + gap_width
     return in_top_gap or in_bottom_gap
 
 def free_space_right(person, obstacles, occupied):
+    """Checks if the cell immediately to the right is available"""
     nx = person.x + 1
     ny = person.y
     return (
@@ -77,6 +84,14 @@ def free_space_right(person, obstacles, occupied):
     )
 
 def move(person, obstacles, occupied):
+    """
+    Movement for agent: navigation and collision avoidance.
+    
+    The decision hierarchy follows:
+    1. Goal Seeking: Attempt to move right if the path is clear or aligned with a gap.
+    2. Obstacle Avoidance: If blocked by the wall, search for the nearest vertical exit.
+    3. Conflict Resolution: If the target cell is occupied by another agent, wait (jam).
+    """
     if not person.active:
         return
     if person.wait:
@@ -103,6 +118,7 @@ def move(person, obstacles, occupied):
 
 
 def run_simulation(n_people):
+    """Executes a single simulation run and returns the steady-state throughput."""
     people = spawn_people(n_people)
     throughput = []
     for t in range(TIMESTEPS):

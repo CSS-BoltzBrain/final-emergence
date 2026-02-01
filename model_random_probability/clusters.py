@@ -36,6 +36,7 @@ obstacles = set()
 # No obstacles for now 
 
 class Person:
+    """Agent that moves in a randomly chosen fixed direction"""
     def __init__(self, pid, x, y):
         self.id = pid
         self.x = x
@@ -60,7 +61,14 @@ for i in range(PEOPLE):
         break
 
 def move(person, blocked, p):
-    # with probability 1 - p_turn, keep direction
+    """
+    Executes a persistent random walk step.
+    
+    Args:
+        person: The agent attempting movement.
+        blocked: Set of currently occupied coordinates.
+        p: Probability of changing direction (turning).
+    """
     if random.random() < p:
         person.dx, person.dy = random.choice(directions)
 
@@ -77,10 +85,16 @@ def move(person, blocked, p):
 
             
 def get_blocked(people, obstacles):
+    """Returns a set of all impassable coordinates."""
     return {(p.x, p.y) for p in people} | obstacles
 
 
 def find_clusters(people):
+    """
+    Performs a cluster analysis using Depth-First Search.
+    A cluster is defined as a group of agents in adjacent cells.
+    Used for calculating the Power Law distribution of crowd sizes.
+    """
     occupied = {(p.x, p.y) for p in people}
     visited = set()
     clusters = []
@@ -124,6 +138,7 @@ all_cluster_sizes = []
 
             
 def update(frame):
+    """Updates the global state for each animation frame"""
     blocked = get_blocked(people, obstacles)
 
     for person in people:

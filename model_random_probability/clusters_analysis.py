@@ -41,6 +41,10 @@ class Person:
         self.dx, self.dy = random.choice(DIRECTIONS)
 
 def find_cluster_sizes(people):
+    """
+    Identifies contiguous groups of agents using a Depth-First Search (DFS) algorithm.
+    This defines 'clusters' for the Power Law analysis.
+    """
     occupied = {(p.x, p.y) for p in people}
     visited = set()
     sizes = []
@@ -60,6 +64,9 @@ def find_cluster_sizes(people):
     return sizes
 
 def collect_distribution_data(p_change):
+    """
+    Runs multiple simulations to gather a large dataset of cluster sizes at steady-state.
+    """
     all_sizes = []
     for run in range(NUM_RUNS):
         people = []

@@ -14,6 +14,7 @@ starting_array = np.array([[1 if random.random() < TARGET_DENSITY_LEFT else 0 fo
                            [1 if random.random() < TARGET_DENSITY_RIGHT else 0 for _ in range(WIDTH)]])
 
 def traffic_rule_step(grid):
+    """Moves forward only if the space ahead is empty."""
     curr = grid.copy()
     after_lane_change = curr.copy()
 
@@ -52,6 +53,10 @@ def traffic_rule_step(grid):
     return final_grid
 
 def traffic_rule(starting_array, timesteps):
+    """
+    Executes the traffic rule step for the chosen number of timesteps,
+    remembers and returns all configurations
+    """
     current_array = starting_array
     configurations = [current_array]
     for _ in range(timesteps):
@@ -77,6 +82,7 @@ def init():
     return dots,
 
 def update(frame):
+    """Updates the global state for each animation frame"""
     grid = configurations[frame]
     y_coords, x_coords = np.where(grid == 1)
     dots.set_data(x_coords, y_coords)
