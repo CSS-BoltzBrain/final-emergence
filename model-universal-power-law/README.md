@@ -7,7 +7,7 @@ You can check in the sample code and the corresponding data used to validate our
 - “Quantitative Sociodynamics”, 2nd Edition, Dirk Helbing
 
 # Data
-The real world data provided by Skinner et.al. to reproduce their paper can be downloaded from their website. We do not attach and commit them in our repository due to the copyright. Here is [the link](https://motion.cs.umn.edu/PowerLaw/dl/data.zip), and you can also browser [their website](https://motion.cs.umn.edu) to have a more comprehensive view.
+The real world data provided by Skinner et.al. to reproduce their paper can be downloaded from their website. Here is [the link](https://motion.cs.umn.edu/PowerLaw/dl/data.zip), and you can also browser [their website](https://motion.cs.umn.edu) to have a more comprehensive view.
 
 We reproduce the paper by checking the "outdoor" data with our "torus" simulation.
 It is optional to download their data if you do not want to reproduce the simulation based on their data, which we use it simply for validation. See "Reproduce the Simulation" section below for more details.
@@ -17,21 +17,24 @@ Invoke this bash script to reproduce the simulation. Note: you can feel free to 
 
 ```
 $ ./reproduce-exp.sh
+
+<skipped pytest output>
+
 Loaded config: ./config/torus.yaml
 Environment: TorusEnvironment (torus)
 Torus size: 15.0 x 15.0 m
 Agents: 18
 Running 10000 iterations...
-  iteration 1000/10000
-  iteration 2000/10000
-  iteration 3000/10000
-  iteration 4000/10000
-  iteration 5000/10000
-  iteration 6000/10000
-  iteration 7000/10000
-  iteration 8000/10000
-  iteration 9000/10000
-  iteration 10000/10000
+  iteration 1000/10000 (active: 18)
+  iteration 2000/10000 (active: 18)
+  iteration 3000/10000 (active: 18)
+  iteration 4000/10000 (active: 18)
+  iteration 5000/10000 (active: 18)
+  iteration 6000/10000 (active: 18)
+  iteration 7000/10000 (active: 18)
+  iteration 8000/10000 (active: 18)
+  iteration 9000/10000 (active: 18)
+  iteration 10000/10000 (active: 18)
 Time-to-collision data: 5898 values -> data-presentation/tau_torus_data.csv
 Scrambled data:         47789 values -> data-presentation/tau_torus_scrambled.csv
 
@@ -45,7 +48,7 @@ Loaded My Simulation: 63 points
 
 === Power Law Fit: My Simulation ===
 Calculating best minimal value for power law fit
-Fitting xmin: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 57/57 [00:00<00:00, 600.19it/s]
+Fitting xmin: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 57/57 [00:00<00:00, 845.68it/s]
   Fitted alpha (exponent): 2.2987
   xmin: 0.7925
   Power law vs exponential: R=-6.8107, p=0.0004
@@ -53,6 +56,8 @@ Fitting xmin: 100%|████████████████████�
 ===================================
 
 Plot saved to data-presentation/comparison_E_tau_torus.png
+
+<skipped more similar output messages>
 
 ```
 
