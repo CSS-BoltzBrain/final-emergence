@@ -67,10 +67,14 @@ class TTCSimulation:
         # Agent state arrays — initialized by the environment
         self.pos, self.vel, self.gvel = env.init_agents(self.rad)
 
+        # Track which agents are active (for absorbing boundary conditions)
+        self.active = np.ones(self.num, dtype=bool)
+
     def find_neighbors(self):
         """
         Find neighbors within sight range for each agent.
         Uses the environment's wrapping to compute shortest distance.
+        Skips inactive agents (for absorbing boundary conditions).
 
         Returns:
             nbr: list of lists -- nbr[i] = neighbor indices of agent i
@@ -83,8 +87,12 @@ class TTCSimulation:
         for i in range(self.num):
             nbr_i = []
             nd_i = []
+            if not self.active[i]:
+                nbr.append(nbr_i)
+                nd.append(nd_i)
+                continue
             for j in range(self.num):
-                if i == j:
+                if i == j or not self.active[j]:
                     continue
                 d = self.pos[i] - self.pos[j]
                 self.env.wrap_relative(d)
@@ -215,7 +223,7 @@ class TTCSimulation:
         """
         Advance the simulation by one timestep dt.
 
-        1. Neighbor search (geometry-aware)
+        1. Neighbor search (geometry-aware, skips inactive agents)
         2. Force computation per agent:
            - Driving force toward goal velocity: (gvel - vel) / 0.5
            - Random perturbation
@@ -223,6 +231,7 @@ class TTCSimulation:
            - Collision avoidance: F_avoid = -dE/dr for each neighbor pair
         3. Euler integration of velocity and position
         4. Boundary conditions (from environment)
+        5. Deactivate agents that exit absorbing boundaries
         """
         nbr, _ = self.find_neighbors()
         dt = self.dt
@@ -230,6 +239,9 @@ class TTCSimulation:
         F = np.zeros((self.num, 2))
 
         for i in range(self.num):
+            if not self.active[i]:
+                continue
+
             # Driving force toward goal velocity (relaxation time = 0.5 s)
             F[i] += (self.gvel[i] - self.vel[i]) / 0.5
             # Random perturbation
@@ -258,9 +270,17 @@ class TTCSimulation:
 
         # Euler integration
         for i in range(self.num):
+            if not self.active[i]:
+                continue
+
             self.vel[i] += F[i] * dt
             self.pos[i] += self.vel[i] * dt
-            self.env.apply_boundary(self.pos[i], self.rad)
+
+            # apply_boundary returns True if agent should be removed
+            # (absorbing boundary condition)
+            should_remove = self.env.apply_boundary(self.pos[i], self.rad)
+            if should_remove:
+                self.active[i] = False
 
     def compute_all_pairwise_ttc(self):
         """

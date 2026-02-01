@@ -211,6 +211,13 @@ class TTCVisualization:
         rad = self.sim.rad
 
         for i in range(self.sim.num):
+            # Hide inactive agents (absorbing boundary)
+            if not self.sim.active[i]:
+                self.canvas.itemconfigure(self.circles[i], state="hidden")
+                self.canvas.itemconfigure(self.vel_lines[i], state="hidden")
+                self.canvas.itemconfigure(self.gvel_lines[i], state="hidden")
+                continue
+
             cx = self.sim.pos[i, 0]
             cy = self.sim.pos[i, 1]
             vx = self.sim.vel[i, 0]
@@ -219,6 +226,7 @@ class TTCVisualization:
             gy = self.sim.gvel[i, 1]
 
             # Agent circle
+            self.canvas.itemconfigure(self.circles[i], state="normal")
             self.canvas.coords(
                 self.circles[i],
                 sx * (cx - rad), sy * (cy - rad),

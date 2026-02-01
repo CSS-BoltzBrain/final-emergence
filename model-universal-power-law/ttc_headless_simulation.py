@@ -32,11 +32,14 @@ Plotting results:
 """
 
 import argparse
+import json
 import os
 import csv
 
 from ttc_engine import TTCSimulation
 from environment import load_config
+from jam_tracker import JamTracker
+from cluster_tracker import ClusterTracker
 
 
 def detect_env_type(env):
@@ -75,8 +78,20 @@ def get_file_prefix(env_type):
     }.get(env_type, 'tau')
 
 
-def run_simulation(sim, num_iterations, sample_interval):
-    """Run the simulation and collect time-to-collision data."""
+def run_simulation(sim, num_iterations, sample_interval,
+                   jam_tracker=None, cluster_tracker=None):
+    """Run the simulation and collect time-to-collision data.
+
+    Args:
+        sim: TTCSimulation instance
+        num_iterations: Number of timesteps to run
+        sample_interval: Record TTC every N iterations
+        jam_tracker: Optional JamTracker instance for tracking jam durations
+        cluster_tracker: Optional ClusterTracker instance for tracking cluster sizes
+
+    Returns:
+        (all_ttc, scrambled_ttc) tuple of TTC value lists
+    """
     # Storage for snapshots of (positions, velocities) at sampled frames
     snapshots = []
     all_ttc = []
@@ -84,13 +99,37 @@ def run_simulation(sim, num_iterations, sample_interval):
     for iteration in range(num_iterations):
         sim.step()
 
+        # Update jam tracker if enabled (every timestep)
+        if jam_tracker is not None:
+            jam_tracker.update(sim.pos, sim.active)
+
         if iteration % sample_interval == 0:
             snapshots.append((sim.pos.copy(), sim.vel.copy()))
             ttc_values = sim.compute_all_pairwise_ttc()
             all_ttc.extend(ttc_values)
 
+            # Update cluster tracker at sample interval
+            if cluster_tracker is not None:
+                cluster_tracker.update(sim.pos, sim.active)
+
         if (iteration + 1) % 1000 == 0:
-            print(f"  iteration {iteration + 1}/{num_iterations}")
+            active_count = sim.active.sum()
+            status = f"  iteration {iteration + 1}/{num_iterations}"
+            if jam_tracker is not None:
+                jam_count = jam_tracker.get_current_jam_count()
+                status += f" (active: {active_count}, jammed: {jam_count})"
+            else:
+                status += f" (active: {active_count})"
+            print(status)
+
+        # Stop early if no agents remain
+        if sim.active.sum() == 0:
+            print(f"  All agents removed at iteration {iteration + 1}")
+            break
+
+    # Finalize jam tracker to capture ongoing jams
+    if jam_tracker is not None:
+        jam_tracker.finalize()
 
     # Compute scrambled time-to-collision data.
     #
@@ -155,6 +194,18 @@ def main():
                         help='Override environment size (torus side length)')
     parser.add_argument('--sight', type=float, default=None,
                         help='Override sight range for neighbor detection')
+    parser.add_argument('--track-jams', action='store_true',
+                        help='Enable jam duration tracking')
+    parser.add_argument('--jam-dt-window', type=float, default=1.0,
+                        help='Time window for jam detection in seconds (default: 1.0)')
+    parser.add_argument('--jam-threshold', type=float, default=None,
+                        help='Displacement threshold for jam detection in meters '
+                             '(default: 2 * agent radius = 0.4m)')
+    parser.add_argument('--track-clusters', action='store_true',
+                        help='Enable cluster size tracking')
+    parser.add_argument('--cluster-threshold', type=float, default=None,
+                        help='Distance threshold for cluster connectivity in meters '
+                             '(default: 3 * agent radius = 0.6m)')
     args = parser.parse_args()
 
     # Load configuration and create simulation
@@ -174,13 +225,43 @@ def main():
     print(f"Environment: {type(env).__name__} ({env_type})")
     print_env_info(env, env_type)
     print_agent_info(sim, env_type)
+    if args.track_jams:
+        jam_threshold = args.jam_threshold or (2 * sim.rad)
+        print(f"Jam tracking: enabled (window={args.jam_dt_window}s, "
+              f"threshold={jam_threshold}m)")
+    if args.track_clusters:
+        cluster_threshold = args.cluster_threshold or (3 * sim.rad)
+        print(f"Cluster tracking: enabled (threshold={cluster_threshold}m)")
     print(f"Running {args.iterations} iterations...")
+
+    # Create jam tracker if enabled
+    jam_tracker = None
+    if args.track_jams:
+        jam_threshold = args.jam_threshold or (2 * sim.rad)
+        jam_tracker = JamTracker(
+            num_agents=sim.num,
+            dt=sim.dt,
+            dt_window=args.jam_dt_window,
+            threshold=jam_threshold,
+        )
+
+    # Create cluster tracker if enabled
+    cluster_tracker = None
+    if args.track_clusters:
+        cluster_threshold = args.cluster_threshold or (3 * sim.rad)
+        cluster_tracker = ClusterTracker(
+            num_agents=sim.num,
+            cluster_threshold=cluster_threshold,
+            env=env,
+        )
 
     # Run simulation
     all_ttc, scrambled_ttc = run_simulation(
         sim=sim,
         num_iterations=args.iterations,
         sample_interval=args.sample_interval,
+        jam_tracker=jam_tracker,
+        cluster_tracker=cluster_tracker,
     )
 
     # Write output files
@@ -193,11 +274,84 @@ def main():
 
     print(f"Time-to-collision data: {len(all_ttc)} values -> {data_path}")
     print(f"Scrambled data:         {len(scrambled_ttc)} values -> {scrambled_path}")
+
+    # Write jam duration data if tracking was enabled
+    if jam_tracker is not None:
+        jam_durations = jam_tracker.get_completed_jam_events()
+        jam_path = os.path.join(output_dir, 'jam_durations.csv')
+        os.makedirs(output_dir, exist_ok=True)
+        with open(jam_path, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['duration'])
+            for d in jam_durations:
+                writer.writerow([d])
+
+        # Write metadata
+        meta_path = os.path.join(output_dir, 'jam_durations_meta.json')
+        stats = jam_tracker.get_statistics()
+        meta = {
+            'dt': sim.dt,
+            'dt_window': args.jam_dt_window,
+            'threshold': args.jam_threshold or (2 * sim.rad),
+            'total_jam_events': stats['total_events'],
+            'mean_duration': stats['mean_duration'],
+            'max_duration': stats['max_duration'],
+            'total_simulation_time': args.iterations * sim.dt,
+            'config_file': args.config,
+        }
+        with open(meta_path, 'w') as f:
+            json.dump(meta, f, indent=2)
+
+        print(f"Jam durations:          {len(jam_durations)} events -> {jam_path}")
+        print(f"  Mean duration: {stats['mean_duration']:.2f}s, "
+              f"Max: {stats['max_duration']:.2f}s")
+
+    # Write cluster size data if tracking was enabled
+    if cluster_tracker is not None:
+        cluster_sizes = cluster_tracker.get_all_cluster_sizes()
+        cluster_path = os.path.join(output_dir, 'cluster_sizes.csv')
+        os.makedirs(output_dir, exist_ok=True)
+        with open(cluster_path, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['size'])
+            for s in cluster_sizes:
+                writer.writerow([s])
+
+        # Write metadata
+        meta_path = os.path.join(output_dir, 'cluster_sizes_meta.json')
+        stats = cluster_tracker.get_statistics()
+        meta = {
+            'cluster_threshold': args.cluster_threshold or (3 * sim.rad),
+            'total_clusters': stats['total_clusters'],
+            'num_samples': stats['num_samples'],
+            'mean_size': stats['mean_size'],
+            'max_size': stats['max_size'],
+            'total_simulation_time': args.iterations * sim.dt,
+            'config_file': args.config,
+        }
+        with open(meta_path, 'w') as f:
+            json.dump(meta, f, indent=2)
+
+        print(f"Cluster sizes:          {len(cluster_sizes)} clusters -> {cluster_path}")
+        print(f"  Mean size: {stats['mean_size']:.2f}, Max: {stats['max_size']}")
+
     print()
     print("To plot results:")
     print(f"  python plot_powerlaw.py --data {data_path} \\")
     print(f"      --scrambled {scrambled_path} \\")
     print(f"      --fit --output {output_dir}/{env_type}_powerlaw.png")
+
+    if jam_tracker is not None:
+        print()
+        print("To plot jam duration distribution:")
+        print(f"  python plot_powerlaw_jam_duration.py --data {jam_path} \\")
+        print(f"      --fit --output {output_dir}/jam_powerlaw.png")
+
+    if cluster_tracker is not None:
+        print()
+        print("To plot cluster size distribution:")
+        print(f"  python plot_powerlaw_cluster_size.py --data {cluster_path} \\")
+        print(f"      --fit --output {output_dir}/cluster_powerlaw.png")
 
 
 if __name__ == '__main__':
