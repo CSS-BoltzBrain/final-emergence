@@ -1,0 +1,50 @@
+simulation:
+  dt: 0.02
+  target_tolerance: 0.3
+
+domain:
+  xmin: 0.0
+  xmax: 20.0
+  ymin: 0.0
+  ymax: 4.0
+
+agent:
+  radius: 0.4
+  desired_speed: 1.5
+  max_speed: 2.5
+  perception_radius: 1.0
+  social_radius: 0.7
+  speed_A: 1.15
+
+forces:
+  gradient:
+    strength: 20.0
+  repulsive:
+    strength: 30.0
+    decay: 9.0
+  resistance:
+    gamma: 3.0
+  random:
+    probability: 0.1
+    strength: 1.0
+
+spawn:
+  rate: 4.0
+  max_agents: 1200
+  min_dist: 0.25
+  left:
+    x: 0.5
+    y_range: [0.5, 3.5]
+    target: [19.5, 2.0]
+  right:
+    x: 19.5
+    y_range: [0.5, 3.5]
+    target: [0.5, 2.0]
+
+walls:
+  - type: horizontal
+    y: 0.0
+    normal: [0, 1]
+  - type: horizontal
+    y: 4.0
+    normal: [0, -1]
