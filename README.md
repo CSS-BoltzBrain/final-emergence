@@ -1,13 +1,28 @@
 # Final Emergence - Complex System Simulation Project (Team 10, 2025)
 This repository is the code base used for grading and presentation.
 
-The presentation slides can be found here: [file placeholder]
+The presentation slides can be found [here (Google Presentation link)](https://docs.google.com/presentation/d/14hL5iyFlzlP5nZoBibPYshgV_cjp7G_TS_9RRHDuvAc/edit?pli=1&slide=id.g3c21385d9cb_0_0#slide=id.g3c21385d9cb_0_0)
+If the above link on the internet does not work, you can find the static presentation slides [here](presentation/pedestrian_dynamics.pdf) as well.
+
 
 # File Hierarchy
-- model-random-probability
-- model-AB
-- model-unversal-power-law
-- project-longshot-hpc-supermarket
+Our project is composed of a few different models and sub-projects.
+The folder names are self-descriptive.
+They are (in the order presented in the presentation slides):
+
+- model_random_probability
+- model-Concept-AB
+- model-universal-power-law
+- large-scale-simulation
+
+
+
+The below are more logistics folders and files:
+- **presentation**: where you can find the static file of the presentation slides.
+- **data**: where you can figure out how to access data we use.
+- README.md
+- requirements.txt
+
 
 # Model: Random probability
 
@@ -77,4 +92,4 @@ For example, let us try "corridor" instead of "torus" open space (to mimic the "
 python ttc_vis.py --config ./config/corridor.yaml
 ```
 
-For more details, including how GenAI is used for this model implementation, please see [this README](model-unversal-power-law/README.md).
+For more details, including how GenAI is used for this model implementation, please see [this README](model-universal-power-law/README.md) of this model sub-project.
