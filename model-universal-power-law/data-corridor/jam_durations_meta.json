@@ -2,9 +2,9 @@
   "dt": 0.02,
   "dt_window": 1.0,
   "threshold": 0.4,
-  "total_jam_events": 68,
-  "mean_duration": 2.7844117647058826,
-  "max_duration": 8.36,
+  "total_jam_events": 726,
+  "mean_duration": 6.025757575757575,
+  "max_duration": 26.400000000000002,
   "total_simulation_time": 200.0,
   "config_file": "config/corridor-jam.yaml"
 }
