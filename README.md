@@ -20,6 +20,7 @@ They are (in the order presented in the presentation slides):
 The below are more logistics folders and files:
 - **presentation**: where you can find the static file of the presentation slides.
 - **data**: where you can figure out how to access data we use.
+- **results**: where you can figure out how to access the results we use in our presentation.
 - README.md
 - requirements.txt
 
