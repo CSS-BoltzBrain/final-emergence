@@ -66,7 +66,7 @@ Variables you can change:
 | **Save** | `--save`| `False` | Save the animation or png. |
 
 # Model: Universal Power Law Between Internal Energy and Time-to-collision
-## Quickstart
+## Quickstart: reproduce figures used in the presentation
 
 Reproduced figures used in the presentation with the below commands. You need to go to `model-universal-power-law` first:
 
@@ -74,6 +74,7 @@ Reproduced figures used in the presentation with the below commands. You need to
 ./reproduce-exp.sh
 ```
 
+## Quickstart: specific simulation and visualization
 Run simulation:
 
 ```
@@ -92,6 +93,8 @@ For example, let us try "corridor" instead of "torus" open space (to mimic the "
 ```
 python ttc_vis.py --config ./config/corridor.yaml
 ```
+
+You can arbitrary pick-up pre-defined configuration of simulation in `./model-universal-power-law/config/` to try different agent behaviors and "environment" layout agents moving around.
 
 For more details, including how GenAI is used for this model implementation, please see [this README](model-universal-power-law/README.md) of this model sub-project.
 
