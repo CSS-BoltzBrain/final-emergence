@@ -67,10 +67,10 @@ Variables you can change:
 # Model: Universal Power Law Between Internal Energy and Time-to-collision
 ## Quickstart
 
-Reproduced figures used in the presentation:
+Reproduced figures used in the presentation with the below commands. You need to go to `model-universal-power-law` first:
 
 ```
-model-unversal-power-law$ ./reproduce-exp.sh
+./reproduce-exp.sh
 ```
 
 Run simulation:
