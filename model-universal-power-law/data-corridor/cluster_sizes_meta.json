@@ -1,0 +1,9 @@
+{
+  "cluster_threshold": 0.6000000000000001,
+  "total_clusters": 6394,
+  "num_samples": 2000,
+  "mean_size": 18.76759461995621,
+  "max_size": 60,
+  "total_simulation_time": 200.0,
+  "config_file": "config/corridor-cluster.size.yaml"
+}
