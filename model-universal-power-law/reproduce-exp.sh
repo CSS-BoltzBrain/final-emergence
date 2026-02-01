@@ -22,7 +22,13 @@ python plot_powerlaw_cluster_size.py --data data-corridor/cluster_sizes.csv --fi
 xdg-open data-corridor/cluster_powerlaw.png
 
 # power law of jam duration
-python ttc_headless_simulation.py --seed 42 --config config/corridor-jam.yaml --track-jams
-python plot_powerlaw_jam_duration.py --data data-corridor/jam_durations.csv --fit --output data-corridor/jam_powerlaw.png
-
-xdg-open data-corridor/jam_powerlaw.png
+#
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!! Job takes long time (around 2 hours) !!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Disabled by default
+#
+#python ttc_headless_simulation.py --seed 42 --config config/corridor-jam.yaml --track-jams
+#python plot_powerlaw_jam_duration.py --data data-corridor/jam_durations.csv --fit --output data-corridor/jam_powerlaw.png
+#
+#xdg-open data-corridor/jam_powerlaw.png
