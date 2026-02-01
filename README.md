@@ -93,3 +93,29 @@ python ttc_vis.py --config ./config/corridor.yaml
 ```
 
 For more details, including how GenAI is used for this model implementation, please see [this README](model-universal-power-law/README.md) of this model sub-project.
+
+# Model: Large-Scale Supermarket Crowd Simulation
+
+This model scales to hundreds of agents with optimized updates and checkpointed visualization. You can run either a single baseline simulation or a probability sweep.
+
+Quickstart (from the repository root):
+
+```
+python large-scale-simulation/src/main.py large-scale-simulation/configs/empty.yaml large-scale-simulation/scratch 1000 --mode baseline --probability 0.1 --num-agents 96
+```
+
+Run a sweep across multiple probabilities:
+
+```
+python large-scale-simulation/src/main.py large-scale-simulation/configs/surround.yaml large-scale-simulation/scratch 1000 --mode sweep --num-agents 200
+```
+
+Visualize a saved run (creates an .mp4 next to the .npy checkpoint file):
+
+```
+python large-scale-simulation/src/visualize.py large-scale-simulation/scratch/simulation_1000_0.1.npy
+```
+
+Note: saving videos requires ffmpeg installed on your system.
+
+For more details, including information about the use of GenAI for this model, please see [this README](large-scale-simulation/README.md) of this model sub-project.

@@ -411,11 +411,11 @@ Controls how often agents randomly change direction:
 
 ### Agent Count
 
-NuThe framework is optimized for 100+ agents; slowdown should be minimal
+The framework is optimized for 100+ agents; slowdown should be minimal
 - If experiencing issues, ensure you're using Python 3.10+
 - Consider reducing to 100-150 agents if running on limited hardware
 - Use smaller layouts for testing purposes
-- Check that numpy is properly installed and up to date
+- Check that NumPy is properly installed and up to date
 - Consider layout size when choosing agent count
 
 ## Troubleshooting
@@ -450,3 +450,11 @@ When modifying the codebase:
 3. Verify type hints are accurate
 4. Update docstrings for modified functions
 5. Add tests for new functionality
+
+## Use of Generative AI
+For this model, very few GenAI was used. Most of the code was handwritten.
+In the later stages, a weird bug was found, but was not commonly reproducible.
+For this, the chat feature was used, but the code was too complex for the AI
+agent to find the bugs. In the end, I found it myself. However, the AI was used
+to generate the testing suite, as well as provide some help with formatting
+and docstrings, as well as the generation of the largest part of this README.
