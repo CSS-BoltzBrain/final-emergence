@@ -1,12 +1,23 @@
+import argparse
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import random
 
-# Parameters
-WIDTH = 40
-HEIGHT = 30
-PEOPLE = 300
-TIMESTEPS = 300
+parser = argparse.ArgumentParser(description="Crowd Simulation Parameters")
+parser.add_argument("--width", type=int, default=30, help="Grid width")
+parser.add_argument("--height", type=int, default=30, help="Grid height")
+parser.add_argument("--people", type=int, default=300, help="Number of people")
+parser.add_argument("--steps", type=int, default=400, help="Max timesteps")
+parser.add_argument("--save", type=bool, default=False, help="Save animation?")
+
+args = parser.parse_args()
+
+WIDTH = args.width
+HEIGHT = args.height
+PEOPLE = args.people
+TIMESTEPS = args.steps
+save = args.save
+
 
 directions = [(1,0), (-1,0), (0,1), (0,-1)]
 
@@ -171,10 +182,13 @@ def update(frame):
         move(p, obstacles, occupied, wall_x)
 
     # Stop animation if everyone is gone
-    if not any(p.active for p in people):
-        ani.event_source.stop()
-        ax.set_title("All agents exited")
-        return scat,
+        if not any(p.active for p in people):
+            # Only try to stop the timer if it actually exists (interactive mode)
+            if ani.event_source is not None:
+                ani.event_source.stop()
+                
+            ax.set_title("All agents exited")
+            return scat,
     total_jam.append(sum(p.jam_time for p in people))
     passed = sum(
         1 for p in people
@@ -193,6 +207,8 @@ ani = FuncAnimation(fig, update,
                     frames=TIMESTEPS,
                     interval=100,
                     blit=False)
-plt.show()
 
-ani.save("model_random_probability/results/bottleneck.gif", writer='pillow', fps=10)
+if save:
+    ani.save("model_random_probability/results/bottleneck.gif", writer='pillow', fps=10)
+else:
+    plt.show()

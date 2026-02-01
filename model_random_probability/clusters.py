@@ -9,12 +9,25 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.animation import FFMpegWriter
 import random
+import argparse
 
-WIDTH = 30
-HEIGHT = 30
-PEOPLE = 300
-TIMESTEPS = 500
-P_CHANGE_DIR = 0.005
+parser = argparse.ArgumentParser(description="Crowd Simulation Parameters")
+parser.add_argument("--width", type=int, default=30, help="Grid width")
+parser.add_argument("--height", type=int, default=30, help="Grid height")
+parser.add_argument("--people", type=int, default=300, help="Number of people")
+parser.add_argument("--steps", type=int, default=400, help="Max timesteps")
+parser.add_argument("--runs", type=int, default=20, help="Number of runs")
+parser.add_argument("--p_change", type=float, default=0.005, help="Probability to change directions")
+parser.add_argument("--save", type=bool, default=True, help="Save animation?")
+
+args = parser.parse_args()
+
+WIDTH = args.width
+HEIGHT = args.height
+PEOPLE = args.people
+TIMESTEPS = args.steps
+P_CHANGE_DIR = args.p_change
+save = args.save
 
 # horizontal or vertical
 directions = [(1,0), (-1,0), (0,1), (0,-1)]
@@ -99,8 +112,6 @@ def find_clusters(people):
 fig, ax = plt.subplots()
 ax.set_xlim(-0.5, WIDTH-0.5)
 ax.set_ylim(-0.5, HEIGHT-0.5)
-# ox, oy = zip(*obstacles)
-# ax.scatter(ox, oy, c="black", s=80, marker="s")
 xs = [float(p.x) for p in people]
 ys = [float(p.y) for p in people]
 colors = ["blue"] * PEOPLE
@@ -142,10 +153,9 @@ def update(frame):
     return scat,
 
 anim = FuncAnimation(fig, update, frames=TIMESTEPS, interval=100, blit=False)
-plt.show()
 
-# writer = FFMpegWriter(fps=20, metadata=dict(artist='Team 10'), bitrate=1800)
-
-# Save the animation
-print("Saving animation... this might take a minute.")
-anim.save("model_random_probability/results/pedestrian_dynamics.gif", writer='pillow', fps=10)
+# Save the animation or plot
+if save:
+    anim.save("model_random_probability/results/clusters.gif", writer='pillow', fps=10)
+else: 
+    plt.show()
